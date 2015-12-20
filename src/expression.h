@@ -21,6 +21,8 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <vector>
+#include <memory>
 
 namespace sym{
 
@@ -28,7 +30,9 @@ class Scalar;
 class BinOp;
 class Variable;
 class Expression;
-typedef Expression Expr;
+class TreeBuilder;
+
+typedef std::shared_ptr<Expression> Expr;
 typedef double Real;
 
 
@@ -44,9 +48,9 @@ typedef std::unordered_map<Variable, Real, variable_hash> Variables;
 // reduce memory usage and dynamic allocation
 // needed in this file (those two don't need to be freed)
 // which currently is problematic
-Expr* zero();
-Expr* one();
-Expr* minus_one();
+Expr zero();
+Expr one();
+Expr minus_one();
 
 // Simplify levels
 // level1 evaluate finite expr  (no precision loss)
@@ -64,9 +68,23 @@ enum ExprType{
     tAdd = 3,
     tInv = 4,
     tLn = 5,
-    tExp = 6
+    tExp = 6,
+    tPow = 7
 };
 
+/*
+ *  Shared Function signature
+ *      Make it easier to change them later on
+ */
+#define DERIVATE Expr derivate(TreeBuilder& tb, Variable& x)
+#define EVAL Expr eval(TreeBuilder& tb, Variables& x)
+#define TYPE ExprType type()
+#define FULL_EVAL Real full_eval(Variables& x)
+#define PRINT std::ostream& print(std::ostream& out)
+#define SIMPLIFY Expr simplify()
+#define COPY Expr copy(TreeBuilder& tb)
+
+#define TB(x) tb.add_node(x)
 //
 //  Pure Abstract
 //
@@ -76,34 +94,34 @@ public:
     virtual ~Expression() = default;
 
     // derivate in respect to the variable x
-    virtual Expression* derivate(Variable& x) = 0;
+    virtual DERIVATE = 0;
 
     // quick helper
-    Expression* derivate(Expression* y){
+    Expr derivate(TreeBuilder& tb, Expr y){
         Variable& x = (Variable&) *y;
-        return derivate(x);
+        return derivate(tb, x);
     }
 
     // return the node type
-    virtual ExprType type() = 0;
+    virtual TYPE = 0;
 
     // evaluate the expression using defined Variables
     // it returns an Expr* because it may be a partial eval
     // you can check for a partial eval using is_scalar()
-    virtual Expr* eval(Variables& v) = 0;
+    virtual EVAL = 0;
 
     // fully evaluate the expression
     // is faster than partial eval since we can collapse the graphs
     // and not use expression
-    virtual Real full_eval(Variables& x) = 0;
+    virtual FULL_EVAL = 0;
 
     // print a representation of the Expression
-    virtual std::ostream& print(std::ostream& out) = 0;
+    virtual PRINT = 0;
 
     // needed for factorization
     // check if two Tree are equivalent
     // /!\ too lazy to do the exact thing
-    virtual bool is_equal(Expression* expr){
+    virtual bool is_equal(Expr expr){
 
         std::stringstream ss1;
         expr->print(ss1);
@@ -121,75 +139,148 @@ public:
     virtual bool is_one()    {  return false;   }
 
     // make trivial simplification (no dynamic allocation)
-    virtual Expr* simplify(/*level = 0*/) {  return this;    }
+    virtual SIMPLIFY {  return Expr(this);    }
 
     // is the expr pre-allocated
-    static bool to_be_deleted(Expression* expr){
+    static bool to_be_deleted(Expr expr){
         return !(expr == zero() || expr == one() || expr == minus_one());
     }
 
-    static bool delete_expr(Expression* expr){
+    static bool delete_expr(Expr expr){
         /*
         if (to_be_deleted(expr)){
             delete expr;
             expr = nullptr;
             return true;
-        }*/
+        }//*/
 
         return false;
     }
 
-    // Expression* copy();
+     virtual COPY = 0;
 };
+
+//
+//  Keep track of dyn allocation
+//
+class TreeBuilder
+{
+public:
+//    struct Element{
+//        Element(Expr* el, bool own=true):
+//            el(el), own(own)
+//        {}
+
+//        Expr* el;
+//        bool own;
+//    };
+
+    TreeBuilder(Expr e):
+        _root(e)
+    {}
+
+    template<typename T>
+    TreeBuilder(Expr l, Expr r):
+        _root(new T(l, r))
+    {
+        _gc.push_back(r);
+        _gc.push_back(l);
+    }
+
+    Expr add_node(Expr e/*, bool b=true*/){
+        _gc.push_back(_root);
+        _root = e;
+        return e;
+    }
+
+    TreeBuilder& operator+ (TreeBuilder& b);
+    TreeBuilder& operator* (TreeBuilder& b);
+
+    TreeBuilder operator+ (const TreeBuilder& b) const;
+    TreeBuilder operator* (const TreeBuilder& b) const;
+
+//    TreeBuilder& operator= (TreeBuilder& b){
+//    }
+
+    ~TreeBuilder(){
+//        //if (_root.own)
+//            Expression::delete_expr(_root);
+
+//        for(auto& i: _gc)
+//            //if (i.own)
+//                Expression::delete_expr(i);
+    }
+
+    TreeBuilder derivate(const TreeBuilder& x){
+        TreeBuilder dx(zero());
+        _root->derivate(dx, x._root);
+        return dx;
+    }
+
+    Expr& root() {  return _root;   }
+
+    void print(){
+        _root->print(std::cout);
+    }
+
+private:
+
+    Expr _root;
+    std::vector<Expr> _gc;
+};
+
+
+const TreeBuilder vvar(const std::string& name);
+TreeBuilder function();
 
 
 class BinOp: public Expression
 {
 public:
 
-    BinOp(Expr* l, Expr* r):
+    BinOp(Expr l, Expr r):
         left(l), right(r)
     {}
 
     ~BinOp(){
-        delete_expr(left);
-        delete_expr(right);
+        //delete_expr(left);
+        //delete_expr(right);
     }
 
-    template<typename function>
-    Real _full_eval(Variables& x);
+//    template<typename function>
+//    Real _full_eval(Variables& x);
 
-    template<typename T, typename function>
-    Expr* _eval(Variables& v);
+//    template<typename T, typename function>
+//    Expr* _eval(Variables& v);
 
-    Expr* left;
-    Expr* right;
+    Expr left;
+    Expr right;
 };
 
 class UnaryOp: public Expression
 {
 public:
 
-    UnaryOp(Expr* e):
+    UnaryOp(Expr e):
         expr(e)
     {}
 
     ~UnaryOp(){
-        delete_expr(expr);
+        //delete_expr(expr);
     }
 
-    template<typename T, typename function>
-    Expr* _eval(Variables& v);
+//    template<typename T, typename function>
+//    Expr* _eval(Variables& v);
 
-    template<typename function>
-    Real _full_eval(Variables& x);
+//    template<typename function>
+//    Real _full_eval(Variables& x);
 
-    Expr* expr;
+    Expr expr;
 };
 
 //
 //  Constant
-//
+//      Does not make dynamic alloc
 class Scalar: public Expression
 {
 public:
@@ -197,30 +288,35 @@ public:
         _value(val)
     {}
 
-    Expr* derivate(Variable&) override{
+    DERIVATE override{
         return zero(); // new Scalar(0);
     }
 
-    Expr* eval(Variables&) override{
-        return this;
+    EVAL override{
+        return Expr(this);
     }
 
-    Real full_eval(Variables& x) override{
+    FULL_EVAL override{
         return _value;
     }
 
-    std::ostream& print(std::ostream& out) override{
+    PRINT override{
         out << _value;
         return out;
     }
 
-    ExprType type() override {  return tScalar;}
+    TYPE override {  return tScalar;}
 
     bool is_scalar() override{  return true;          }
     bool is_nul()    override{  return _value == 0;   }
     bool is_one()    override{  return _value == 1;   }
 
     Real value() const   {   return _value;  }
+
+    COPY override{
+        Expr e = Expr(new Scalar(value()));
+        return tb.add_node(e);
+    }
 
 private:
     Real _value;
@@ -229,7 +325,7 @@ private:
 
 //
 //  Placeholder Variable
-//
+//      Does not make dynamic alloc
 class Variable: public Expression
 {
 public:
@@ -242,22 +338,27 @@ public:
         return _name == b._name;
     }
 
-    Expr* derivate(Variable& x) override {
-        return this == &x ? one() : zero(); // new Scalar(1): new Scalar(0);
+    DERIVATE override {
+        return tb.add_node(this == &x ? one() : zero()); // new Scalar(1): new Scalar(0);
     }
 
-    Expr* eval(Variables& d) override;
+    EVAL override;
 
-    Real full_eval(Variables& x) override;
+    FULL_EVAL override;
 
-    std::ostream& print(std::ostream& out) override{
+    PRINT override{
         out << _name;
         return out;
     }
 
     const std::string& name() const {   return _name;   }
 
-    ExprType type() override {  return tVariable;}
+    TYPE override {  return tVariable;}
+
+    // Variables are kept unique
+    COPY override{
+        return Expr(this);
+    }
 
 private:
     std::string _name;
@@ -267,7 +368,7 @@ private:
 //
 // BinOp
 //
-
+/*
 template<typename T, typename function>
 Expr* BinOp::_eval(Variables& v){
     Expr* el = left->eval(v);
@@ -317,7 +418,7 @@ Expr* UnaryOp::_eval(Variables& v){
 template<typename function>
 Real UnaryOp::_full_eval(Variables& x) {
     return function(expr->full_eval(x));
-}
+}*/
 }
 
 

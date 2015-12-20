@@ -19,67 +19,89 @@ class CastError : public std::exception
 public:
     const char* what() const noexcept{
         return "Expression is not a Scalar\n"
-               "You are trying to extract a value from an expression with unkown\n"
-               "try full_eval instead\n";
+               "\t 1) You are trying to extract a value from an expression with unkown\n"
+               "\ttry full_eval instead\n"
+               "\t 2) You are trying to extract binary operand from a non binary Expression\n";
     }
 };
 
+
+Bin explode(Expr x){
+    ExprType t = x->type();
+    BinOp* b = dynamic_cast<BinOp*>(x.get());
+
+    if (t == tAdd || t == tMult)
+        return Bin(b->left, b->right);
+
+    throw CastError();
+}
 //
 //  Implementation
 //
-Expression* constant(Real v){
-    return new Scalar(v);
+Expr constant(Real v){
+    return Expr(new Scalar(v));
 }
 
-Expression* var(const std::string& name){
-    return new Variable(name);
+Expr var(const std::string& name){
+    return Expr(new Variable(name));
 }
 
-Variable& var(Expression* x){
-    return (Variable&) *x;
+Variable& var(Expr x){
+    return (Variable&) *(x.get());
 }
 
-Expression* exp(Expr* l){
+Expr exp(Expr l){
     if (l->is_nul())
         return one();
 
-    return new Exp(l);
+    return Expr(new Exp(l));
 }
 
-Real val(Expression* x){
+Expr scalar(Real v){
+    return Expr(new Scalar(v));
+}
+
+Expr pow(Expr e, Expr p){
+    return Expr(new Pow(e, p));
+}
+Expr pow(Expr e, Real p){
+    return Expr(new Pow(e, Expr(new Scalar(p))));
+}
+
+Real val(Expr x){
     if (x->is_scalar())
-        return dynamic_cast<Scalar*>(x)->value();
+        return dynamic_cast<Scalar*>(x.get())->value();
 
     throw CastError();
 }
 
-Real val_nocheck(Expression* x){
-    return dynamic_cast<Scalar*>(x)->value();
+Real val_nocheck(Expr x){
+    return dynamic_cast<Scalar*>(x.get())->value();
 }
 
-Expression* pi(){
-    static MathConst pi_val("pi", 3.141592654);
-    return (Expr*) &pi_val;
-}
+//Expr pi(){
+//    static MathConst pi_val("pi", 3.141592654);
+//    return (Expr) &pi_val;
+//}
 
 // so I don't think it is interesting to handle de x/0 case
 // since it is symbolic computing as long as we don't eval it who cares
 // + we might want to compute some limit or something
-Expression* inv(Expr* l){
+Expr inv(Expr l){
     if (l->is_one())
         return one();
 
-    return new Inverse(l);
+    return Expr(new Inverse(l));
 }
 
-Expression* ln(Expr* l){
+Expr ln(Expr l){
     if (l->is_one())
         return zero();
 
-    return new Ln(l);
+    return Expr(new Ln(l));
 }
 
-Expression* mult(Expr* l, Expr* r){
+Expr mult(Expr l, Expr r){
     if (l->is_nul() || r->is_nul())
         return zero();
 
@@ -91,12 +113,12 @@ Expression* mult(Expr* l, Expr* r){
 
     // if scalar evaluate
     if (r->is_scalar() && l->is_scalar())
-        return new Scalar(val_nocheck(r) * val_nocheck(l));
+        return Expr(new Scalar(val_nocheck(r) * val_nocheck(l)));
 
-    return new Mult(l, r);
+    return Expr(new Mult(l, r));
 }
 
-Expression* add(Expr* l, Expr* r){
+Expr add(Expr l, Expr r){
     if (l->is_nul() && r->is_nul())
         return zero();
 
@@ -108,13 +130,13 @@ Expression* add(Expr* l, Expr* r){
 
     // simplify
     if (r->is_scalar() && l->is_scalar())
-        return new Scalar(val_nocheck(r) + val_nocheck(l));
+        return Expr(new Scalar(val_nocheck(r) + val_nocheck(l)));
 
     // identical ?
     if (l == r)
-        return mult(new Scalar(2), l);
+        return mult(Expr(new Scalar(2)), l);
 
-    return new Add(l, r);
+    return Expr(new Add(l, r));
 }
 
 }

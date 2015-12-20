@@ -1,8 +1,8 @@
 #ifndef SYM_H
 #define SYM_H
 
-//#include <vector>
-#include <memory>
+#include <vector>
+//#include <memory>
 
 #include "operators.h"
 
@@ -21,45 +21,65 @@ namespace sym{
 //  Symbol
 //
 //      This is the public interface that should guarantee no memory leaks
-/*
-class Sym
-{
-public:
+//*
+//class Sym
+//{
+//public:
 
-    static Sym var(std::string name){
-        return Sym(new Variable(name));
-    }
+//    static Sym var(std::string name){
+//        return Sym(new Variable(name));
+//    }
 
-    Sym operator* (Sym a){
-        return Sym(mult(this->_root.get(), a._root.get()));
-    }
+//    Sym(Expr* v):
+//        _root(v)
+//    {}
 
-    Sym operator+ (Sym a){
-        return Sym(add(this->_root.get(), a._root.get()));
-    }
+//    Sym derivate(Sym a){
+//        return Sym(_root->derivate(a._root));
+//    }
 
-    Sym derivate(Sym a){
-        return Sym(_root.get()->derivate(a._root.get()));
-    }
+//    std::ostream& print(std::ostream& out){
+//        _root->print(out);
+//        return out;
+//    }
 
-    std::ostream& print(std::ostream& out){
-        _root.get()->print(out);
-        return out;
-    }
+//    Sym operator+ (Sym& a, Sym& b){
+//        return Sym(add(a._root, b._root));
+//    }
 
-private:
+//    Sym operator* (Sym& a, Sym& b){
+//        return Sym(mult(a._root, b._root));
+//    }
 
-    Sym(Expr* v):
-        _root(v)
-    {}
+//private:
 
-    std::shared_ptr<Expr> _root;
-};
+//    Expr* _root;
+//    std::vector<Expr*> _gc;
+//};
 
-inline
-std::ostream& operator<< (std::ostream& out, Sym& v){
-    return v.print(out);
-}//*/
+//inline
+//std::ostream& operator<< (std::ostream& out, Sym& v){
+//    return v.print(out);
+//}
+
+//namespace api{
+//    TreeBuilder var(std::string& name);
+//}
+
+
+
+//namespace api{
+
+//    inline
+//    const TreeBuilder var(std::string& name){
+//        return TreeBuilder(new Variable(name));
+//    }
+
+//    inline
+//    TreeBuilder function(){
+//        return TreeBuilder(zero());
+//    }
+//}
 
 }
 
