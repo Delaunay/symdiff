@@ -1,427 +1,216 @@
-/*
- *  Date: Dec 14 2015
- *
- *  Author: Pierre Delaunay
- *
- *  File: Define Basic AST
- *          - What is an Expression     Expression
- *          - What is a Binary Operator BinaryOp
- *          - What is a Unary Operator  UnaryOp
- *          - What is a Constant        Scalar(Value)   (Most used Object) specialy during Partial Evals
- *          - What is a Variable        Variable(name)
- *
- *  TODO: Replace naked pointers with std::unique_ptr<> for public API function
- *      - Would it be uselful to specify type (Real, integer and all)
- *      - What about Matrices ?
- */
-#ifndef SYM_EXPRESSION_H
-#define SYM_EXPRESSION_H
+#ifndef SYMDIF_EXPR_HEADER
+#define SYMDIF_EXPR_HEADER
 
-#include <unordered_map>
-#include <string>
-#include <iostream>
-#include <sstream>
-#include <vector>
-#include <memory>
+#include <memory>        // shared_ptr
+#include <ostream>       // output stream
+#include <unordered_map> // Hashtable
 
-namespace sym{
+namespace symdif{
 
-class Scalar;
-class BinOp;
-class Variable;
-class Expression;
-class TreeBuilder;
+// Forward declaration
+namespace internal{
+    class Expression;
+    typedef std::shared_ptr<Expression> SymExpr;
+}
+typedef internal::SymExpr SymExpr;
+typedef std::unordered_map<std::string, SymExpr> Context;
 
-typedef std::shared_ptr<Expression> Expr;
-typedef double Real;
-
-
-// Make Variable Hashable
-struct variable_hash{
-    std::size_t operator() (const Variable& v) const noexcept;
-    std::hash<std::string> _h;
-};
-
-typedef std::unordered_map<Variable, Real, variable_hash> Variables;
-
-
-// reduce memory usage and dynamic allocation
-// needed in this file (those two don't need to be freed)
-// which currently is problematic
-Expr zero();
-Expr one();
-Expr minus_one();
-
-// Simplify levels
-// level1 evaluate finite expr  (no precision loss)
-// level2 evaluate all scalar expr (possible precision loss)
-enum Simplify
-{
-    level1,
-    level2,
-};
-
-enum ExprType{
-    tScalar = 0,
-    tVariable = 1,
-    tMult = 2,
-    tAdd = 3,
-    tInv = 4,
-    tLn = 5,
-    tExp = 6,
-    tPow = 7
-};
-
-/*
- *  Shared Function signature
- *      Make it easier to change them later on
- */
-#define DERIVATE Expr derivate(TreeBuilder& tb, Variable& x)
-#define EVAL Expr eval(TreeBuilder& tb, Variables& x)
-#define TYPE ExprType type()
-#define FULL_EVAL Real full_eval(Variables& x)
-#define PRINT std::ostream& print(std::ostream& out)
-#define SIMPLIFY Expr simplify()
-#define COPY Expr copy(TreeBuilder& tb)
-
-#define TB(x) tb.add_node(x)
-//
-//  Pure Abstract
-//
-class Expression
-{
+class Error{
 public:
-    virtual ~Expression() = default;
 
-    // derivate in respect to the variable x
-    virtual DERIVATE = 0;
-
-    // quick helper
-    Expr derivate(TreeBuilder& tb, Expr y){
-        Variable& x = (Variable&) *y;
-        return derivate(tb, x);
-    }
-
-    // return the node type
-    virtual TYPE = 0;
-
-    // evaluate the expression using defined Variables
-    // it returns an Expr* because it may be a partial eval
-    // you can check for a partial eval using is_scalar()
-    virtual EVAL = 0;
-
-    // fully evaluate the expression
-    // is faster than partial eval since we can collapse the graphs
-    // and not use expression
-    virtual FULL_EVAL = 0;
-
-    // print a representation of the Expression
-    virtual PRINT = 0;
-
-    // needed for factorization
-    // check if two Tree are equivalent
-    // /!\ too lazy to do the exact thing
-    virtual bool is_equal(Expr expr){
-
-        std::stringstream ss1;
-        expr->print(ss1);
-
-        std::stringstream ss2;
-        this->print(ss2);
-
-        // lol
-        return ss1.str() == ss2.str();
-    }
-
-    // help simplifying Expression
-    virtual bool is_scalar() {  return false;   }
-    virtual bool is_nul()    {  return false;   }
-    virtual bool is_one()    {  return false;   }
-
-    // make trivial simplification (no dynamic allocation)
-    virtual SIMPLIFY {  return Expr(this);    }
-
-    // is the expr pre-allocated
-    static bool to_be_deleted(Expr expr){
-        return !(expr == zero() || expr == one() || expr == minus_one());
-    }
-
-    static bool delete_expr(Expr expr){
-        /*
-        if (to_be_deleted(expr)){
-            delete expr;
-            expr = nullptr;
-            return true;
-        }//*/
-
-        return false;
-    }
-
-     virtual COPY = 0;
-};
-
-//
-//  Keep track of dyn allocation
-//
-class TreeBuilder
-{
-public:
-//    struct Element{
-//        Element(Expr* el, bool own=true):
-//            el(el), own(own)
-//        {}
-
-//        Expr* el;
-//        bool own;
-//    };
-
-    TreeBuilder(Expr e):
-        _root(e)
+    Error(const std::string& str):
+        _msg(str)
     {}
 
-    template<typename T>
-    TreeBuilder(Expr l, Expr r):
-        _root(new T(l, r))
+    const char* what() const noexcept{  return _msg.c_str(); }
+
+private:
+    std::string _msg;
+};
+
+class FullEvalError: public Error{
+public:
+    FullEvalError(const std::string& str): Error(str) {}
+};
+
+class CastError: public Error{
+public:
+    CastError(const std::string& str): Error(str) {}
+};
+
+namespace internal{
+    class Expression{
+    public:
+        virtual ~Expression() {}
+
+        /* Print representation */
+        virtual std::ostream& print(std::ostream& out) = 0;
+
+        virtual bool is_nul()    {  return false;   }
+        virtual bool is_one()    {  return false;   }
+        virtual bool is_scalar() {  return false;   }
+        virtual bool is_leaf()   {  return false;   }
+
+        virtual double full_eval(Context& c)  = 0;
+        virtual SymExpr partial_eval(Context& c) = 0;
+        virtual SymExpr derivate(const std::string& name) = 0;
+    private:
+    };
+
+    SymExpr one();
+    SymExpr zero();
+
+    class ScalarDouble: public Expression
     {
-        _gc.push_back(r);
-        _gc.push_back(l);
-    }
+    public:
+        ScalarDouble(double v):
+            _value(v)
+        {}
 
-    Expr add_node(Expr e/*, bool b=true*/){
-        _gc.push_back(_root);
-        _root = e;
-        return e;
-    }
+        virtual std::ostream& print(std::ostream& out) {    return out << _value; }
 
-    TreeBuilder& operator+ (TreeBuilder& b);
-    TreeBuilder& operator* (TreeBuilder& b);
+        virtual bool is_nul()    {  return _value == 0;   }
+        virtual bool is_one()    {  return _value == 1;   }
+        virtual bool is_scalar() {  return true;   }
+        virtual bool is_leaf()   {  return true;   }
+        SymExpr derivate(const std::string& name) { return zero(); }
 
-    TreeBuilder operator+ (const TreeBuilder& b) const;
-    TreeBuilder operator* (const TreeBuilder& b) const;
+        double full_eval(Context& c)             {    return _value;  }
+        virtual SymExpr partial_eval(Context& c) {    return SymExpr(new ScalarDouble(_value)); }
 
-//    TreeBuilder& operator= (TreeBuilder& b){
-//    }
+        double value() {    return _value; }
 
-    ~TreeBuilder(){
-//        //if (_root.own)
-//            Expression::delete_expr(_root);
+    private:
+        double _value;
+    };
 
-//        for(auto& i: _gc)
-//            //if (i.own)
-//                Expression::delete_expr(i);
-    }
+    double get_value(SymExpr v);
 
-    TreeBuilder derivate(const TreeBuilder& x){
-        TreeBuilder dx(zero());
-        _root->derivate(dx, x._root);
-        return dx;
-    }
+    class Placeholder: public Expression
+    {
+    public:
+        Placeholder(const std::string& name):
+            _name(name)
+        {}
 
-    Expr& root() {  return _root;   }
+        virtual std::ostream& print(std::ostream& out) {    return out << _name; }
 
-    void print(){
-        _root->print(std::cout);
-    }
+        virtual bool is_leaf()   {  return true;   }
 
-private:
+        SymExpr derivate(const std::string& name) {
+            if (name == _name)
+                return one();
+            return zero();
+        }
 
-    Expr _root;
-    std::vector<Expr> _gc;
-};
+        double full_eval(Context& c){
+            if (c.find(_name) != c.end())
+                return c[_name]->full_eval(c);
+            throw FullEvalError("Placeholder variable was not set");
+        }
 
+        virtual SymExpr partial_eval(Context& c) {
+            if (c.find(_name) != c.end())
+                return c[_name];
+            return SymExpr(new Placeholder(_name));
+        }
 
-const TreeBuilder vvar(const std::string& name);
-TreeBuilder function();
-
-
-class BinOp: public Expression
-{
-public:
-
-    BinOp(Expr l, Expr r):
-        left(l), right(r)
-    {}
-
-    ~BinOp(){
-        //delete_expr(left);
-        //delete_expr(right);
-    }
-
-//    template<typename function>
-//    Real _full_eval(Variables& x);
-
-//    template<typename T, typename function>
-//    Expr* _eval(Variables& v);
-
-    Expr left;
-    Expr right;
-};
-
-class UnaryOp: public Expression
-{
-public:
-
-    UnaryOp(Expr e):
-        expr(e)
-    {}
-
-    ~UnaryOp(){
-        //delete_expr(expr);
-    }
-
-//    template<typename T, typename function>
-//    Expr* _eval(Variables& v);
-
-//    template<typename function>
-//    Real _full_eval(Variables& x);
-
-    Expr expr;
-};
-
-//
-//  Constant
-//      Does not make dynamic alloc
-class Scalar: public Expression
-{
-public:
-    Scalar(Real val = 0):
-        _value(val)
-    {}
-
-    DERIVATE override{
-        return zero(); // new Scalar(0);
-    }
-
-    EVAL override{
-        return Expr(this);
-    }
-
-    FULL_EVAL override{
-        return _value;
-    }
-
-    PRINT override{
-        out << _value;
-        return out;
-    }
-
-    TYPE override {  return tScalar;}
-
-    bool is_scalar() override{  return true;          }
-    bool is_nul()    override{  return _value == 0;   }
-    bool is_one()    override{  return _value == 1;   }
-
-    Real value() const   {   return _value;  }
-
-    COPY override{
-        Expr e = Expr(new Scalar(value()));
-        return tb.add_node(e);
-    }
-
-private:
-    Real _value;
-};
+    private:
+        std::string _name;
+    };
 
 
-//
-//  Placeholder Variable
-//      Does not make dynamic alloc
-class Variable: public Expression
-{
-public:
-    // Make Variable Hashable
-    Variable(const std::string& name):
-        _name(name)
-    {}
+    class Add: public Expression
+    {
+    public:
+        Add(SymExpr lhs, SymExpr rhs):
+            _lhs(lhs), _rhs(rhs)
+        {}
 
-    bool operator== (const Variable& b) const{
-        return _name == b._name;
-    }
+        virtual std::ostream& print(std::ostream& out) {
+            out << '('; _lhs->print(out) << " + ";
+            return      _rhs->print(out) << ')';
+        }
 
-    DERIVATE override {
-        return tb.add_node(this == &x ? one() : zero()); // new Scalar(1): new Scalar(0);
-    }
+        double full_eval(Context& c){ return _lhs->full_eval(c) + _rhs->full_eval(c); }
 
-    EVAL override;
+        virtual SymExpr partial_eval(Context& c) {
 
-    FULL_EVAL override;
+            SymExpr lhs = _lhs->partial_eval(c);
+            SymExpr rhs = _rhs->partial_eval(c);
 
-    PRINT override{
-        out << _name;
-        return out;
-    }
+            // simplify
+            if (lhs->is_scalar() && rhs->is_scalar()){
+                double r = get_value(rhs);
+                double l = get_value(lhs);
+                return SymExpr(new ScalarDouble(r + l));
+            }
 
-    const std::string& name() const {   return _name;   }
+            // carry
+            return SymExpr(new Add(lhs, rhs));
+        }
 
-    TYPE override {  return tVariable;}
+        SymExpr derivate(const std::string& name) {
 
-    // Variables are kept unique
-    COPY override{
-        return Expr(this);
-    }
+            SymExpr rhs = _rhs->derivate(name);
+            SymExpr lhs = _lhs->derivate(name);
 
-private:
-    std::string _name;
-};
+            return SymExpr(new Add(rhs, lhs));
+        }
 
+    private:
+        SymExpr _lhs;
+        SymExpr _rhs;
+    };
 
-//
-// BinOp
-//
-/*
-template<typename T, typename function>
-Expr* BinOp::_eval(Variables& v){
-    Expr* el = left->eval(v);
-    Expr* er = right->eval(v);
-    Real vl = 0;
-    Real vr = 0;
+    class Mult: public Expression
+    {
+    public:
+        Mult(SymExpr lhs, SymExpr rhs):
+            _lhs(lhs), _rhs(rhs)
+        {}
 
-    if (el->is_scalar()){
-       vl = dynamic_cast<Scalar*>(el)->value();
+        virtual std::ostream& print(std::ostream& out) {
+            out << '('; _lhs->print(out) << " * ";
+            return      _rhs->print(out) << ')';
+        }
 
-       if (er->is_scalar()){
-           vr = dynamic_cast<Scalar*>(er)->value();
-           return new Scalar(function(vr, vl));
-       }
+        double full_eval(Context& c){ return _lhs->full_eval(c) * _rhs->full_eval(c); }
 
-       return new T(new Scalar(vl), er);
-    }
+        virtual SymExpr partial_eval(Context& c) {
 
-    if (er->is_scalar()){
-        vr = dynamic_cast<Scalar*>(er)->value();
-        return new T(el, new Scalar(vr));
-    }
+            SymExpr lhs = _lhs->partial_eval(c);
+            SymExpr rhs = _rhs->partial_eval(c);
 
-    return new T(el, er);
-}
+            // simplify
+            if (lhs->is_scalar() && rhs->is_scalar()){
+                double r = get_value(rhs);
+                double l = get_value(lhs);
+                return SymExpr(new ScalarDouble(r * l));
+            }
 
-template<typename function>
-Real BinOp::_full_eval(Variables& x) {
-    return function(left->full_eval(x), right->full_eval(x));
+            // carry
+            return SymExpr(new Mult(lhs, rhs));
+        }
+
+        SymExpr derivate(const std::string& name) {
+
+            SymExpr rhs = _rhs->derivate(name);
+            SymExpr lhs = _lhs->derivate(name);
+
+            auto first = SymExpr(new Mult(rhs, _lhs));
+            auto sec = SymExpr(new Mult(_rhs, lhs));
+
+            return SymExpr(new Add(first, sec));
+        }
+
+    private:
+        SymExpr _lhs;
+        SymExpr _rhs;
+    };
 }
 
 
-template<typename T, typename function>
-Expr* UnaryOp::_eval(Variables& v){
-
-    Expr* e = expr->eval(v);
-
-    if (e->is_scalar()){
-        Real v = dynamic_cast<Scalar*>(e)->value();
-
-        return new Scalar(function(v));
-    }
-
-    return new T(e);
 }
 
-template<typename function>
-Real UnaryOp::_full_eval(Variables& x) {
-    return function(expr->full_eval(x));
-}*/
-}
-
-
-
-#endif // EXPRESSION_H
-
+#endif

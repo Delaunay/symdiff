@@ -1,80 +1,34 @@
-/*
- *  Symbolic Derivation in C++
- *
- *  Author: Pierre Delaunay
- *
- *  Date: 2015-12-15
- *
- */
+
+#include "sym.h"
 #include <iostream>
-//#include <memory>
 
-#include "operators.h"
-//#include "sym.h"
+using namespace symdif;
 
-using namespace std;
-//using namespace sym;
+int main(){
 
-//typedef std::shared_ptr<sym::Expr> Sym;
+    /*  Expr building */
+    Sym x = make_var("x");
+    Sym y = make_var("y");
 
-//Sym operator+(Sym& a, Sym b){
-//    return Sym(mult(a.get(), b.get()));
-//}
+    Sym f = x * x * y;
 
+    f.print(std::cout) << std::endl;
 
-int main()
-{
-//    const sym::TreeBuilder x = sym::vvar("x");
+    Sym df = f.derivate("x");
 
-//    auto f = x * x * x;
+    df.print(std::cout) << std::endl;
 
-//    f.print();
+    /*  Full Eval */
+    Context c = {{"x", make_val(4)}, {"y", make_val(3)}};
 
-//    cout << "\n";
+    std::cout << f.full_eval(c) << std::endl;
+    std::cout << df.full_eval(c) << std::endl;
 
-//    f.derivate(x).print();
+    /*  Partial Eval */
+    Context p = {{"x", make_val(4)}};
 
-//    cout << "\n";
-
-//    Sym x = Sym::var("x");
-
-//    Sym f = x * x * x;
-
-//    std::cout << f << std::endl;
-
-//    Sym x = var("x");
-
-//    Sym f = x * x * x;
-
-    sym::TreeBuilder tb = sym::function();
-
-    // variables
-    sym::Expr x = sym::var("x");
-    sym::Expr y = sym::var("y");
-
-    // function
-    sym::Expr f = sym::mult(sym::mult(x, x), x); // sym::mult(sym::pow(x, 3), y);//
-
-    // Hastable of values
-//    sym::Variables partial = {{sym::var(x), 4}};
-//    sym::Variables full = {{sym::var(x), 4}, {sym::var(y), 4}};
-
-    std::cout << " f  : ";   f->print(std::cout) << "\n";
-//    std::cout << " fx : ";   f->eval(tb, partial)->print(std::cout) << "\n";    // eval return an expression
-//    std::cout << " fx : " << f->full_eval(full) << "\n\n";                  // full_eval is faster and return a real
-                                                                            // require all unkown to be set
-    auto dxf = f->derivate(tb, x);
-
-    std::cout << "dxf  : ";   dxf->print(std::cout) << "\n";
-//    std::cout << "dxfx : ";   dxf->eval(tb, partial)->print(std::cout) << "\n";
-//    std::cout << "dxfx : " << dxf->full_eval(full) << "\n\n";
-
-    auto dyf = f->derivate(tb, y);
-
-    std::cout << "dyf  : ";   dyf->print(std::cout) << "\n";
-//    std::cout << "dyfy : ";   dyf->eval(tb, partial)->print(std::cout) << "\n";
-//    std::cout << "dyfy : " << dyf->full_eval(full) << "\n\n";
+    f.partial_eval(p).print(std::cout) << std::endl;
+    df.partial_eval(p).print(std::cout) << std::endl;
 
     return 0;
 }
-

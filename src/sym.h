@@ -1,87 +1,40 @@
-#ifndef SYM_H
-#define SYM_H
+#ifndef SYMDIF_SYM_HEADER
+#define SYMDIF_SYM_HEADER
 
-#include <vector>
-//#include <memory>
+#include "Expression.h"
 
-#include "operators.h"
+namespace symdif{
 
-// public API
-namespace sym{
+// Public API
+class Sym{
+public:
 
-/*
- *  Sym x = var(x);
- *
- *  Sym f = x * x * x;
- *
- *  Sym df = f.derivate(x);
- */
+    Sym operator+ (Sym& val){   return SymExpr(new internal::Add(_v, val)); }
+    Sym operator* (Sym& val){   return SymExpr(new internal::Mult(_v, val)); }
 
-//
-//  Symbol
-//
-//      This is the public interface that should guarantee no memory leaks
-//*
-//class Sym
-//{
-//public:
+    std::ostream& print(std::ostream& out) {    return _v->print(out);      }
+    Sym derivate(const std::string& name)  {    return _v->derivate(name);  }
 
-//    static Sym var(std::string name){
-//        return Sym(new Variable(name));
-//    }
+    double full_eval(Context& c) {    return _v->full_eval(c);     }
+    Sym partial_eval(Context& c) {    return _v->partial_eval(c); }
 
-//    Sym(Expr* v):
-//        _root(v)
-//    {}
+    // Implicit cast to SymExpr
+    operator SymExpr(){  return _v; }
 
-//    Sym derivate(Sym a){
-//        return Sym(_root->derivate(a._root));
-//    }
+private:
+    Sym(SymExpr v):
+        _v(v)
+    {}
 
-//    std::ostream& print(std::ostream& out){
-//        _root->print(out);
-//        return out;
-//    }
+    internal::SymExpr _v;
 
-//    Sym operator+ (Sym& a, Sym& b){
-//        return Sym(add(a._root, b._root));
-//    }
+    friend Sym make_var(const std::string &v);
+    friend Sym make_val(double b);
+};
 
-//    Sym operator* (Sym& a, Sym& b){
-//        return Sym(mult(a._root, b._root));
-//    }
-
-//private:
-
-//    Expr* _root;
-//    std::vector<Expr*> _gc;
-//};
-
-//inline
-//std::ostream& operator<< (std::ostream& out, Sym& v){
-//    return v.print(out);
-//}
-
-//namespace api{
-//    TreeBuilder var(std::string& name);
-//}
-
-
-
-//namespace api{
-
-//    inline
-//    const TreeBuilder var(std::string& name){
-//        return TreeBuilder(new Variable(name));
-//    }
-
-//    inline
-//    TreeBuilder function(){
-//        return TreeBuilder(zero());
-//    }
-//}
+Sym make_var(const std::string& v);
+Sym make_val(double b);
 
 }
 
-#endif // SYM_H
-
+#endif
