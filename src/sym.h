@@ -3,14 +3,14 @@
 
 #include "Expression.h"
 
-namespace symdif{
+namespace symdiff{
 
 // Public API
 class Sym{
 public:
 
-    Sym operator+ (Sym& val){   return SymExpr(new internal::Add(_v, val)); }
-    Sym operator* (Sym& val){   return SymExpr(new internal::Mult(_v, val)); }
+    Sym operator+ (Sym& val){   return internal::Add::make(_v, val); }
+    Sym operator* (Sym& val){   return internal::Mult::make(_v, val); }
 
     std::ostream& print(std::ostream& out) {    return _v->print(out);      }
     Sym derivate(const std::string& name)  {    return _v->derivate(name);  }

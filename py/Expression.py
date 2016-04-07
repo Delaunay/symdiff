@@ -100,6 +100,27 @@ class Expression:
             return self.__str__()
         return '(' + self.__str__() + ')'
 
+    def _id(self):
+        raise NotImplementedError()
+
+    def __lt__(self, other):
+        return self._id() < other._id()
+
+
+def reorder(a, b):
+    ia = a._id()
+    ib = b._id()
+
+    if ia < ib:
+        return a, b
+
+    if ia != ib:
+        return b, a
+
+    if a.is_scalar() and b.is_scalar() and a.value > b.value:
+        return b, a
+    return a, b
+
 
 class UnaryOperator(Expression):
 
@@ -207,6 +228,9 @@ class ScalarReal(Expression):
     def primitive(self, x):
         return mult(self, x)
 
+    def _id(self):
+        return 0
+
 # pre allocate common values
 __one = ScalarReal(1)
 __zero = ScalarReal(0)
@@ -245,6 +269,9 @@ class Unknown(Expression):
 
     def __str__(self):
         return self.name
+
+    def _id(self):
+        return 1
 
     # def __eq__(self, other):
     #     if self is other:
@@ -311,6 +338,8 @@ class Addition(BinaryOperator):
     def primitive(self, x):
         return add(self.left.primitive(x), self.right.primitive(x))
 
+    def _id(self):
+        return 2
 
 class Subtraction(BinaryOperator):
 
@@ -343,6 +372,8 @@ class Subtraction(BinaryOperator):
     def primitive(self, x):
         return sub(self.left.primitive(x), self.right.primitive(x))
 
+    def _id(self):
+        return 3
 
 class Multiplication(BinaryOperator):
 
@@ -390,6 +421,9 @@ class Multiplication(BinaryOperator):
         # return mult() + mult()
         pass
 
+    def _id(self):
+        return 4
+
 
 class Exp(UnaryOperator):
 
@@ -423,6 +457,9 @@ class Exp(UnaryOperator):
 
     def primitive(self, x):
         return self
+
+    def _id(self):
+        return 5
 
 
 class Log(UnaryOperator):
@@ -459,6 +496,8 @@ class Log(UnaryOperator):
     def primitive(self, x):
         raise ArithmeticError('Log does not have a primitive')
 
+    def _id(self):
+        return 6
 
 class Divide(BinaryOperator):
 
@@ -479,8 +518,9 @@ class Divide(BinaryOperator):
         return self.right
 
     def derivate(self, x: Expression) -> Expression:
-        up = add(mult(minus_one(), mult(self.left, self.right.derivate(x))), mult(self.right, self.left.derivate(x)))
-        return div(up, pow(self.right, scalar(2)))
+        a = mult(self.right, self.left.derivate(x))
+        b = mult(self.left, self.right.derivate(x))
+        return div(sub(a, b), pow(self.right, scalar(2)))
 
     def eval(self, variables) -> Expression:
         l = self.left.eval(variables)
@@ -497,6 +537,8 @@ class Divide(BinaryOperator):
     def apply_function(self, function):
         return div(getattr(self.left, function)(), getattr(self.right, function)())
 
+    def _id(self):
+        return 7
 
 class Pow(BinaryOperator):
 
@@ -536,6 +578,9 @@ class Pow(BinaryOperator):
         v = self.power() + one()
         return mult(div(one(), v), pow(self.expr(), v))
 
+    def _id(self):
+        return 8
+
 
 class MathConstant(ScalarReal):
 
@@ -551,6 +596,9 @@ class MathConstant(ScalarReal):
 
     def copy(self):
         return self
+
+    def _id(self):
+        return 9
 
 # define math constant
 __euler = MathConstant('e', 2.718281828459045)
@@ -569,11 +617,10 @@ def e():
 #   Helper function
 #       Those make trivial simplification
 def add(l: Expression, r: Expression) -> Expression:
+    l, r = reorder(l, r)
+
     if l.is_nul():
         return r
-
-    if r.is_nul():
-        return l
 
     if r.is_scalar() and l.is_scalar():
         return scalar(r.value + l.value)
@@ -589,7 +636,6 @@ def add(l: Expression, r: Expression) -> Expression:
         if r.right == l:
             return r.left
 
-    # condensate addition as multiplication
     if isinstance(l, Multiplication):
         if l.right == r and l.left.is_scalar():
             return mult(r, scalar(l.left.value + 1))
@@ -608,6 +654,8 @@ def add(l: Expression, r: Expression) -> Expression:
 
 
 def mult(l: Expression, r: Expression) -> Expression:
+    l, r = reorder(l, r)
+
     if l.is_nul() or r.is_nul():
         return zero()
 
@@ -622,6 +670,10 @@ def mult(l: Expression, r: Expression) -> Expression:
 
     if l is r:
         return pow(l, scalar(2))
+
+    if l.is_scalar() and isinstance(r, Multiplication):
+        if r.left.is_scalar():
+            return mult(scalar(l.value * r.left.value), r.right)
 
     if isinstance(l, Divide):
         if l.down() == r:
@@ -742,6 +794,8 @@ def scalar(v):
 
 
 def sub(l: Expression, r: Expression) -> Expression:
+    l, r = reorder(l, r)
+
     if l == r:
         return zero()
 
@@ -781,7 +835,7 @@ if __name__ == '__main__':
 
     val = {x: scalar(5)}
 
-    f = x ** 3 - y ** 2    # add(pow(x, y), mult(y, x))
+    f = x ** 3 - y ** 2    # add(pow(x, 3), mult(y, 2))
     dfdx = f.derivate(x)
 
     print(' f   : ', f,    '\tEval: ', f.eval(val))
