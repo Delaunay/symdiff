@@ -1,16 +1,53 @@
 #ifndef SYMDIF_SYM_HEADER
 #define SYMDIF_SYM_HEADER
 
-#include "Expression.h"
+#include "internal/Placeholder.h"
+#include "internal/Definitions.h"
 
 namespace symdiff{
 
 // Public API
+
+class Sym;
+
+Sym make_val(double b);
+
 class Sym{
 public:
+    static Sym neg(Sym expr)      { return internal::Opposite::make(expr); }
+    static Sym inv(Sym expr)      { return internal::Inverse::make(expr);  }
+    static Sym ln(Sym expr)       { return internal::Ln::make(expr);       }
+    static Sym exp(Sym expr)      { return internal::Exp::make(expr);      }
 
-    Sym operator+ (Sym& val){   return internal::Add::make(_v, val); }
-    Sym operator* (Sym& val){   return internal::Mult::make(_v, val); }
+    static Sym add(Sym a, Sym b)  { return internal::Add::make(a, b);     }
+    static Sym mult(Sym a, Sym b) { return internal::Mult::make(a, b);    }
+
+    static Sym sub(Sym a, Sym b)  { return add(a, neg(b));      }
+    static Sym div(Sym a, Sym b)  { return mult(a, inv(b));     }
+    static Sym pow(Sym a, Sym b)  { return exp(mult(b, ln(a))); }
+
+    static Sym minus_one()  { return Sym(internal::minus_one()); }
+    static Sym zero()       { return Sym(internal::zero()); }
+    static Sym one()        { return Sym(internal::one()); }
+    static Sym two()        { return Sym(internal::two()); }
+    static Sym e()          { return Sym(internal::e()); }
+    static Sym pi()         { return Sym(internal::pi()); }
+
+    Sym operator- ()        {   return neg(_v);       }
+
+
+    // Allow operation with Numeric type that can be cast to a double
+    Sym operator+ (double v){ return add(_v, make_val(v));  }
+    Sym operator* (double v){ return mult(_v, make_val(v)); }
+    Sym operator- (double v){ return sub(_v, make_val(v));  }
+    Sym operator/ (double v){ return div(_v, make_val(v));  }
+    Sym operator^ (double v){ return pow(_v, make_val(v));  }
+
+    Sym operator+ (Sym val){   return add(_v, val);  }
+    Sym operator* (Sym val){   return mult(_v, val); }
+    Sym operator- (Sym val){   return sub(_v, val);  }
+    Sym operator/ (Sym val){   return div(_v, val);  }
+    Sym operator^ (Sym val){   return pow(_v, val);  }
 
     std::ostream& print(std::ostream& out) {    return _v->print(out);      }
     Sym derivate(const std::string& name)  {    return _v->derivate(name);  }
@@ -30,10 +67,20 @@ private:
 
     friend Sym make_var(const std::string &v);
     friend Sym make_val(double b);
+    friend Sym make_named_val(const std::string& v, double b);
 };
 
+
 Sym make_var(const std::string& v);
-Sym make_val(double b);
+Sym make_named_val(const std::string& v, double b);
+
+
+
+
+//  Shortcuts
+// -------------------------------
+
+
 
 }
 

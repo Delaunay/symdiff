@@ -794,7 +794,6 @@ def scalar(v):
 
 
 def sub(l: Expression, r: Expression) -> Expression:
-    l, r = reorder(l, r)
 
     if l == r:
         return zero()

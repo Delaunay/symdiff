@@ -10,7 +10,7 @@ Python version is a lot more advanced (Garbage collection makes it easier).
 
 
 # Python
-    
+
     x = Unknown('x')
     y = Unknown('y')
 
@@ -25,7 +25,7 @@ Python version is a lot more advanced (Garbage collection makes it easier).
     val = {x: scalar(5), y: scalar(2)}
     print(' f   : ', f,    '\tEval: ', f.full_eval(val))
     print('dfdx : ', dfdx, '\tEval: ', dfdx.full_eval(val))
-    
+
 
 # C++
 
@@ -63,3 +63,12 @@ Python version is a lot more advanced (Garbage collection makes it easier).
 
         return 0;
     }
+
+# TODO
+
+* same-fringe: implement nodes equality checking
+* substitution: implement substitution function (no evaluation)
+* reduce: (eval without context)
+* factorize/expand: (factorization need same-fringe)
+* more simplification
+
