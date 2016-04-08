@@ -74,8 +74,42 @@ private:
 Sym make_var(const std::string& v);
 Sym make_named_val(const std::string& v, double b);
 
+/*
+template<typename T, typename... Args>
+static SymExpr make(Args&&... args){
+    return std::make_shared<T>(std::forward<Args>(args)...);
+} */
 
+typedef std::pair<std::string, Sym> Arg;
 
+template<typename T, typename... Args>
+void build_ctx(Context& a,T arg1, Args&&... args){
+    a[arg1.first] = arg1.second;
+
+    return buid_ctx(a, std::forward<Arg>(args)...);
+}
+
+template<typename T>
+void build_ctx(Context& a, T arg1){
+    a[arg1.first] = arg1.second;
+}
+
+template<typename... Args>
+Sym call(Sym function, Args&&... args){
+    Context c;  build_ctx(c, std::forward<Args>(args)...);
+    return function.partial_eval(c);
+}
+
+template<typename... Args>
+Sym partial_call(Sym function, Args&&... args){
+    Context c;  build_ctx(c, std::forward<Args>(args)...);
+    return function.partial_eval(c);
+}
+template<typename... Args>
+double full_call(Sym function, Args&&... args){
+    Context c;  build_ctx(c, std::forward<Args>(args)...);
+    return function.full_eval(c);
+}
 
 //  Shortcuts
 // -------------------------------

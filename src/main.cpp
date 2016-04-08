@@ -4,6 +4,7 @@
 //#include "sym.h"
 #include <iostream>
 
+
 using namespace symdiff;
 using namespace std;
 
@@ -15,9 +16,10 @@ int main(){
 
     f.print(std::cout) << endl;
 
-    Context arg = {{"x", make_val(0.25)}};
+    /// function v with one argument
+    auto v = call(f, Arg("x", make_val(0.25)));
 
-    cout << f.full_eval(arg) << endl;
+    v.print(std::cout) << endl;
 
     /*
     double mean = 0 ;
