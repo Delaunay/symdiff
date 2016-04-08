@@ -68,6 +68,8 @@ Python version is a lot more advanced (Garbage collection makes it easier).
 
 * same-fringe: implement nodes equality checking
 * substitution: implement substitution function (no evaluation)
+    * remove some evaluation related simplification
+
 * reduce: (eval without context)
 * factorize/expand: (factorization need same-fringe)
 * more simplification

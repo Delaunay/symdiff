@@ -1,42 +1,37 @@
 #ifndef SYMDIF_SYM_HEADER
 #define SYMDIF_SYM_HEADER
 
-#include "internal/Placeholder.h"
-#include "internal/Definitions.h"
+#include "internal/AbstractExpression.h"
 
 namespace symdiff{
 
 // Public API
-
 class Sym;
 
 Sym make_val(double b);
+Sym neg(Sym expr);
+Sym inv(Sym expr);
+Sym ln(Sym expr);
+Sym exp(Sym expr);
+
+Sym add(Sym a, Sym b);
+Sym mult(Sym a, Sym b);
+
+Sym sub(Sym a, Sym b);
+Sym div(Sym a, Sym b);
+Sym pow(Sym a, Sym b);
+
+Sym minus_one();
+Sym zero();
+Sym one();
+Sym two();
+Sym e();
+Sym pi();
 
 class Sym{
 public:
-    static Sym neg(Sym expr)      { return internal::Opposite::make(expr); }
-    static Sym inv(Sym expr)      { return internal::Inverse::make(expr);  }
-    static Sym ln(Sym expr)       { return internal::Ln::make(expr);       }
-    static Sym exp(Sym expr)      { return internal::Exp::make(expr);      }
-
-    static Sym add(Sym a, Sym b)  { return internal::Add::make(a, b);     }
-    static Sym mult(Sym a, Sym b) { return internal::Mult::make(a, b);    }
-
-    static Sym sub(Sym a, Sym b)  { return add(a, neg(b));      }
-    static Sym div(Sym a, Sym b)  { return mult(a, inv(b));     }
-    static Sym pow(Sym a, Sym b)  { return exp(mult(b, ln(a))); }
-
-    static Sym minus_one()  { return Sym(internal::minus_one()); }
-    static Sym zero()       { return Sym(internal::zero()); }
-    static Sym one()        { return Sym(internal::one()); }
-    static Sym two()        { return Sym(internal::two()); }
-    static Sym e()          { return Sym(internal::e()); }
-    static Sym pi()         { return Sym(internal::pi()); }
-
     Sym operator- ()        {   return neg(_v);       }
 
-
-    // Allow operation with Numeric type that can be cast to a double
     Sym operator+ (double v){ return add(_v, make_val(v));  }
     Sym operator* (double v){ return mult(_v, make_val(v)); }
     Sym operator- (double v){ return sub(_v, make_val(v));  }
@@ -53,12 +48,18 @@ public:
     Sym derivate(const std::string& name)  {    return _v->derivate(name);  }
 
     double full_eval(Context& c) {    return _v->full_eval(c);     }
-    Sym partial_eval(Context& c) {    return _v->partial_eval(c); }
+    Sym partial_eval(Context& c) {    return _v->partial_eval(c);  }
+    Sym eval(Context c) {  return _v->partial_eval(c); }
+
 
     // Implicit cast to SymExpr
+    // needed because Context use SymExpr i.e make_val must be converted to SymExpr
     operator SymExpr(){  return _v; }
 
 private:
+    // force everything public to be Sym
+    // makes sure the API does not return SymExpr
+    // not if it is such a great idea
     Sym(SymExpr v):
         _v(v)
     {}
@@ -68,25 +69,36 @@ private:
     friend Sym make_var(const std::string &v);
     friend Sym make_val(double b);
     friend Sym make_named_val(const std::string& v, double b);
+    friend Sym neg(Sym expr);
+    friend Sym inv(Sym expr);
+    friend Sym ln(Sym expr);
+    friend Sym exp(Sym expr);
+
+    friend Sym add(Sym a, Sym b);
+    friend Sym mult(Sym a, Sym b);
+
+    friend Sym sub(Sym a, Sym b);
+    friend Sym div(Sym a, Sym b);
+    friend Sym pow(Sym a, Sym b);
+
+    friend Sym minus_one();
+    friend Sym zero();
+    friend Sym one();
+    friend Sym two();
+    friend Sym e();
+    friend Sym pi();
 };
 
 
 Sym make_var(const std::string& v);
 Sym make_named_val(const std::string& v, double b);
 
-/*
-template<typename T, typename... Args>
-static SymExpr make(Args&&... args){
-    return std::make_shared<T>(std::forward<Args>(args)...);
-} */
-
 typedef std::pair<std::string, Sym> Arg;
 
 template<typename T, typename... Args>
 void build_ctx(Context& a,T arg1, Args&&... args){
     a[arg1.first] = arg1.second;
-
-    return buid_ctx(a, std::forward<Arg>(args)...);
+    buid_ctx(a, std::forward<Arg>(args)...);
 }
 
 template<typename T>
@@ -111,9 +123,17 @@ double full_call(Sym function, Args&&... args){
     return function.full_eval(c);
 }
 
-//  Shortcuts
-// -------------------------------
+inline Sym call(Sym function, Context c){
+    return function.partial_eval(c);
+}
 
+inline Sym partial_call(Sym function, Context c){
+    return function.partial_eval(c);
+}
+
+inline double full_call(Sym function, Context c){
+    return function.full_eval(c);
+}
 
 
 }

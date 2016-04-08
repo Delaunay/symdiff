@@ -50,6 +50,7 @@ public:
     virtual bool is_one()    {  return _value == 1;   }
     virtual bool is_scalar() {  return true;   }
     virtual bool is_leaf()   {  return true;   }
+    virtual bool parens()    {  return true;   }
 
     // Transformation
     SymExpr derivate(const std::string& name){  return zero(); }

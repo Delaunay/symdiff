@@ -37,7 +37,14 @@ public:
     virtual UnaryFunction function() = 0;
 
     std::ostream& print(std::ostream& out, const std::string& op) {
-        out << op << '('; _expr->print(out) << ')';
+
+        if (_expr->parens()){
+            out << op << '('; _expr->print(out) << ')';
+        }
+        else{
+             out << op; _expr->print(out);
+        }
+
         return out;
     }
 
@@ -70,8 +77,21 @@ public:
     {}
 
     std::ostream& print(std::ostream& out, const std::string& op) {
-        out << '('; _lhs->print(out) << " " << op << " ";
-        return      _rhs->print(out) << ')';
+
+        if (_lhs->parens() && _rhs->parens()){
+            out << '(';
+                _lhs->print(out);
+            out << " " << op << " ";
+                _rhs->print(out);
+            out << ')';
+        }
+        else{
+                _lhs->print(out);
+            out << " " << op << " ";
+                _rhs->print(out);
+        }
+
+        return out;
     }
 
     virtual BinaryFunction function() = 0;
@@ -97,6 +117,8 @@ public:
         return Node::make(lhs, rhs);
     }
 
+    virtual bool parens() {  return true;   }
+
 protected:
     SymExpr _lhs;
     SymExpr _rhs;
@@ -108,6 +130,26 @@ protected:
 #define DEFAULT_UNARY_MAKE(Type)  { return Expression::make<Type>(expr);     }
 #define DEFAULT_BINARY_MAKE(Type) { return Expression::make<Type>(lhs, rhs); }
 #define OUTLINE_MAKE ;
+
+// Simplify if Scalar
+// This can lead to approximative results
+#define BINARY_SCALAR_EVAL(lhs, rhs, Node, fun) \
+    {\
+        if (lhs->is_scalar() && rhs->is_scalar())\
+            return ScalarDouble::make(fun(get_value(lhs), get_value(rhs)));\
+    \
+        return Expression::make<Node>(lhs, rhs);;\
+    }\
+
+#define UNARY_SCALAR_EVAL(expr, Node, fun) \
+    {\
+        if (expr->is_scalar())\
+            return ScalarDouble::make(fun(get_value(expr)));\
+    \
+        return Expression::make<Node>(expr);;\
+    }\
+
+#define EAGER_EVAL(x) x
 
 #define DEFINE_UNARY(Name, repr_name, ExprSubTypeID, make_fun, fun, derivative)\
     class Name: public UnaryOperator{\

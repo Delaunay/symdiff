@@ -1,25 +1,43 @@
-
 #include "smath.h"
-
-//#include "sym.h"
 #include <iostream>
-
 
 using namespace symdiff;
 using namespace std;
 
 int main(){
 
-    // Expr building
-
+    /*
     auto f = gaussian_pdf(0, 1);
 
     f.print(std::cout) << endl;
+    //f.derivate("x").print(std::cout) << endl;
 
-    /// function v with one argument
-    auto v = call(f, Arg("x", make_val(0.25)));
+                // context is created at compile time (Variadic args)
+    auto v1 = full_call(f, Arg("x", make_val(0.25)));
 
-    v.print(std::cout) << endl;
+                // temporary context
+    auto v2 = full_call(f, {{"x", make_val(0.25)}, {"y", make_val(0.25)}});
+
+
+    Context v = {
+        {"x", make_val(0.25)},
+        {"y", make_val(0.25)}
+    };
+
+    auto v3 = f.full_eval(v);
+
+    cout << v1 << " " << v2 << " " << v3 << endl; */
+
+
+    auto x = make_var("x");
+    auto f = (x + 2) * 3 * ((x * 5) + 3);
+
+    f.print(std::cout) << endl;
+
+    // same thing available for partial call/partial eval
+
+
+
 
     /*
     double mean = 0 ;

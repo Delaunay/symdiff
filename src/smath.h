@@ -9,15 +9,15 @@
 
 namespace symdiff
 {
-    inline Sym sqrt(Sym x) {   return Sym::pow(x, make_val(0.5)); }
+    inline Sym sqrt(Sym x) {   return pow(x, make_val(0.5)); }
 
     inline Sym gaussian_pdf(Sym m, Sym s){
         auto x = make_var("x");
 
-        auto constant = sqrt(Sym::pi() * 2) * s;
+        auto constant = sqrt(pi() * 2) * s;
         auto up = - (((x - m) / s) ^ 2) / 2;
 
-        return Sym::inv(constant) * Sym::exp(up);
+        return inv(constant) * exp(up);
     }
 
     inline Sym gaussian_pdf(double mean, double sd){

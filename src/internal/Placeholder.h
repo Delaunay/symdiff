@@ -46,6 +46,7 @@ public:
     std::ostream& print(std::ostream& out)  {   return out << _name;    }
     operator ExprSubType () const           {   return EST_Placeholder; }
     bool is_leaf()                          {   return true;            }
+    virtual bool parens()                   {   return true;            }
 
 private:
     std::string _name;

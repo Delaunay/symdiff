@@ -1,6 +1,27 @@
 #include "sym.h"
+#include "internal/Placeholder.h"
+#include "internal/Definitions.h"
 
 namespace symdiff{
+
+Sym neg(Sym expr)      { return internal::Opposite::make(expr); }
+Sym inv(Sym expr)      { return internal::Inverse::make(expr);  }
+Sym ln(Sym expr)       { return internal::Ln::make(expr);       }
+Sym exp(Sym expr)      { return internal::Exp::make(expr);      }
+
+Sym add(Sym a, Sym b)  { return internal::Add::make(a, b);     }
+Sym mult(Sym a, Sym b) { return internal::Mult::make(a, b);    }
+
+Sym sub(Sym a, Sym b)  { return add(a, neg(b));      }
+Sym div(Sym a, Sym b)  { return mult(a, inv(b));     }
+Sym pow(Sym a, Sym b)  { return exp(mult(b, ln(a))); }
+
+Sym minus_one()  { return Sym(internal::minus_one()); }
+Sym zero()       { return Sym(internal::zero()); }
+Sym one()        { return Sym(internal::one()); }
+Sym two()        { return Sym(internal::two()); }
+Sym e()          { return Sym(internal::e()); }
+Sym pi()         { return Sym(internal::pi()); }
 
 Sym make_var(const std::string& v) {
     return internal::Placeholder::make(v);

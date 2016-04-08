@@ -23,9 +23,8 @@ DEFINE_BINARY(Add, "+", EST_Add, OUTLINE_MAKE,
     }
 );
 
-DEFINE_UNARY(Opposite, "-", EST_Neg, DEFAULT_UNARY_MAKE(Opposite),
-
-    // function to apply
+DEFINE_UNARY(Opposite, "-", EST_Neg, OUTLINE_MAKE,
+    // Function to apply
     [](double v){ return - v; },
 
     // Derivative
@@ -50,8 +49,8 @@ DEFINE_BINARY(Mult, "*", EST_Mult, OUTLINE_MAKE,
     }
 );
 
-DEFINE_UNARY(Inverse, "1 / ", EST_Inv, DEFAULT_UNARY_MAKE(Inverse),
-    // function to apply
+DEFINE_UNARY(Inverse, "1 / ", EST_Inv, OUTLINE_MAKE,
+    // Function to apply
     [](double v){ return 1.0 / v; },
 
     // Derivative
@@ -63,8 +62,8 @@ DEFINE_UNARY(Inverse, "1 / ", EST_Inv, DEFAULT_UNARY_MAKE(Inverse),
     }
 );
 
-DEFINE_UNARY(Exp, "exp", EST_Exp,  DEFAULT_UNARY_MAKE(Exp),
-    // function to apply
+DEFINE_UNARY(Exp, "exp", EST_Exp,  OUTLINE_MAKE,
+    // Function to apply
     [](double v){ return std::exp(v); },
 
     // Derivative
@@ -74,8 +73,8 @@ DEFINE_UNARY(Exp, "exp", EST_Exp,  DEFAULT_UNARY_MAKE(Exp),
     }
 );
 
-DEFINE_UNARY(Ln, "ln", EST_Ln, DEFAULT_UNARY_MAKE(Ln),
-    // function to apply
+DEFINE_UNARY(Ln, "ln", EST_Ln, OUTLINE_MAKE,
+    // Function to apply
     [](double v){ return std::log(v); },
 
     // Derivative

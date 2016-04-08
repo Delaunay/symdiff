@@ -64,6 +64,7 @@ public:
     virtual bool is_one()    {  return false;   }
     virtual bool is_scalar() {  return false;   }
     virtual bool is_leaf()   {  return false;   }
+    virtual bool parens()    {  return false;   }   // For more pretty printing
 
     // basic graph transformation
     virtual double full_eval(Context& c)  = 0;
@@ -71,6 +72,7 @@ public:
     virtual SymExpr derivate(const std::string& name) = 0;
 
     // implicit conversion to ExprSubType so we can switch over expression
+    // not used
     virtual operator ExprSubType () const = 0;
 private:
 };
