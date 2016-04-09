@@ -28,6 +28,7 @@ Sym two();
 Sym e();
 Sym pi();
 
+// Hollow class
 class Sym{
 public:
     Sym operator- ()        {   return neg(_v);       }
@@ -58,8 +59,8 @@ public:
 
 private:
     // force everything public to be Sym
-    // makes sure the API does not return SymExpr
-    // not if it is such a great idea
+    // makes sure the API does not return SymExpr.
+    // Not sure if it is such a great idea
     Sym(SymExpr v):
         _v(v)
     {}
@@ -95,15 +96,15 @@ Sym make_named_val(const std::string& v, double b);
 
 typedef std::pair<std::string, Sym> Arg;
 
-template<typename T, typename... Args>
-void build_ctx(Context& a,T arg1, Args&&... args){
-    a[arg1.first] = arg1.second;
-    buid_ctx(a, std::forward<Arg>(args)...);
-}
-
 template<typename T>
 void build_ctx(Context& a, T arg1){
     a[arg1.first] = arg1.second;
+}
+
+template<typename T, typename... Args>
+void build_ctx(Context& a,T arg1, Args... args){
+    a[arg1.first] = arg1.second;
+    buid_ctx(a, args...);
 }
 
 template<typename... Args>

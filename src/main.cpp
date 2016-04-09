@@ -6,7 +6,16 @@ using namespace std;
 
 int main(){
 
-    /*
+
+/*
+    auto x = make_var("x");
+
+    // auto f = x + x + x + x;
+    auto f = x - x;
+
+    f.print(cout) << endl; */
+
+
     auto f = gaussian_pdf(0, 1);
 
     f.print(std::cout) << endl;
@@ -26,11 +35,11 @@ int main(){
 
     auto v3 = f.full_eval(v);
 
-    cout << v1 << " " << v2 << " " << v3 << endl; */
+    cout << v1 << " " << v2 << " " << v3 << endl;
 
 
     auto x = make_var("x");
-    auto f = (x + 2) * 3 * ((x * 5) + 3);
+    f = (x + 2) + 3;
 
     f.print(std::cout) << endl;
 

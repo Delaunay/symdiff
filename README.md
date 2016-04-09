@@ -1,12 +1,23 @@
 Symdiff
 =======
 
-Symbolic differentiation in C++ and Python.
+Symbolic differentiation in C++ and Python. Both are standalone implementations.
+This is not intended to be an efficient Symbolic library but rather a
+relatively simple example of how it could be implemented.
+
 
 * py/ for symbolic diff in python
 * src/ for symbolic diff in C++
 
-Python version is a lot more advanced (Garbage collection makes it easier).
+C++ and python implementation are becoming quite different.
+In the C++ implementation, I decided to limit the number of defined nodes to
+the minimum.
+    Example:
+        pow(x, n)" = exp(n * ln (x))    (problematic if x <= 0)
+        div(a, b)" = mult(a, inv(b))
+        sub(a, b)" = add(a, mult(-1, b))
+
+Which can make some function quite hard to read once printed.
 
 
 # Python
@@ -28,7 +39,6 @@ Python version is a lot more advanced (Garbage collection makes it easier).
 
 
 # C++
-
 
     #include "sym.h"
     #include <iostream>
@@ -66,11 +76,54 @@ Python version is a lot more advanced (Garbage collection makes it easier).
 
 # TODO
 
-* same-fringe: implement nodes equality checking
+* implement nodes equality checking
 * substitution: implement substitution function (no evaluation)
     * remove some evaluation related simplification
 
 * reduce: (eval without context)
-* factorize/expand: (factorization need same-fringe)
+* factorize/expand: (factorization need node equality)
 * more simplification
+* tests
+    Would be nice to be able to parse a string
+        f = expr
+        std::stringstream ss, ff;
+        f.print(ss);
+        std::string fstr = ss.str();
+
+        g = read(fstr);
+        f.print(ff);
+        std::string gstr = ff.str();
+
+        if (gstr == fstr)
+            success ()
+
+# IDEA
+
+* Check if Graph can be 'easily' balanced
+* Check if we can use threads to compute two different branches
+* Check shared_ptr and thread
+    Thread share pointers put they cannot deallocate those.
+    Only temporary pointers will be deallocated.
+
+
+     level 1 - Threading
+
+     Thread 1 | Thread 2
+              *
+           /  |  \
+          /   |   \
+         +    |    +
+       /   \  |  /   \
+      a     b | c     d
+              |
+
+    We cannot spawn thread at each nodes they are too many of them.
+    but we could spam per level
+
+* Add Tensor
+* Add Flow control ?
+
+
+
+
 

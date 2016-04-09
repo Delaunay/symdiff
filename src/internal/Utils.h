@@ -63,6 +63,8 @@ public:
         return Node::make(v);
     }
 
+    SymExpr& expr() { return _expr;    }
+
 protected:
     SymExpr _expr;
 };
@@ -78,6 +80,8 @@ public:
 
     std::ostream& print(std::ostream& out, const std::string& op) {
 
+        // as far as I can tell this works
+        // if parens are not present this most likely the place to check
         if (_lhs->parens() && _rhs->parens()){
             out << '(';
                 _lhs->print(out);
@@ -118,6 +122,9 @@ public:
     }
 
     virtual bool parens() {  return true;   }
+
+    SymExpr& lhs() { return _lhs;    }
+    SymExpr& rhs() { return _rhs;    }
 
 protected:
     SymExpr _lhs;
@@ -175,7 +182,7 @@ protected:
             derivative\
         }\
     \
-        operator ExprSubType () const  { return ExprSubTypeID; }\
+        ExprSubType get_type() const  { return ExprSubTypeID; }\
     }
 
 #define DEFINE_BINARY(Name, repr_name, ExprSubTypeID, make_fun, fun, derivative)\
@@ -202,7 +209,7 @@ protected:
             derivative\
         }\
     \
-        operator ExprSubType () const  { return ExprSubTypeID; }\
+        ExprSubType get_type() const  { return ExprSubTypeID; }\
     }
 
 }

@@ -7,16 +7,21 @@ namespace symdiff{
 
 namespace internal{
 
+// Custom RTTI
+// Those are not directly related with operator precedence
 enum ExprSubType
 {
     // Leafs
-    EST_Scalar,
+    EST_Scalar      = 100,
     EST_Placeholder,
 
-    // Nodes
-    EST_Add,
-    EST_Sub,
-    EST_Mult,
+    // Nodes::Binary
+    EST_Add         = 200,
+    EST_Mult        = 300,
+    EST_Pow         = 400,
+
+    // Nodes::Unary
+    EST_Sub         = 1000,
     EST_Neg,
     EST_Inv,
     EST_Exp,
@@ -55,8 +60,10 @@ public:
     //      - Only one term need to be checked during simplification
     //      - The fringe problem with associative nodes become trivial
     //              (used to identify node equality)
+
+    // actually, reorder do no use this anymore
     bool operator < (const Expression& a) {
-        return ExprSubType (*this) < ExprSubType (a);
+        return this->get_type() < a.get_type();
     }
 
     // used for simplification
@@ -73,7 +80,8 @@ public:
 
     // implicit conversion to ExprSubType so we can switch over expression
     // not used
-    virtual operator ExprSubType () const = 0;
+    virtual ExprSubType get_type() const = 0;
+
 private:
 };
 

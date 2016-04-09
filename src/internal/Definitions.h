@@ -49,6 +49,24 @@ DEFINE_BINARY(Mult, "*", EST_Mult, OUTLINE_MAKE,
     }
 );
 
+DEFINE_BINARY(Pow, "^", EST_Pow, OUTLINE_MAKE,
+    // Function to apply
+    [](double a, double b){ return std::pow(a, b); },
+
+    // Derivative
+    {
+        // (a ^ b)' = a'b' (a ^ (b - 1))
+        SymExpr& power = _rhs;
+        SymExpr& expr = _lhs;
+
+        SymExpr pp = power->derivate(name);
+        SymExpr ep = expr->derivate(name);
+
+        return Mult::make(Mult::make(pp, ep), Pow::make(expr, Add::make(power, minus_one())));
+    }
+);
+
+
 DEFINE_UNARY(Inverse, "1 / ", EST_Inv, OUTLINE_MAKE,
     // Function to apply
     [](double v){ return 1.0 / v; },

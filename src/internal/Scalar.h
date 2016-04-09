@@ -45,7 +45,7 @@ public:
     std::ostream& print(std::ostream& out) {    return out << _value; }
 
     // Helpers
-    operator ExprSubType () const { return EST_Scalar; }
+    ExprSubType get_type() const { return EST_Scalar; }
     virtual bool is_nul()    {  return _value == 0;   }
     virtual bool is_one()    {  return _value == 1;   }
     virtual bool is_scalar() {  return true;   }

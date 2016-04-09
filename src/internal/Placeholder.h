@@ -44,7 +44,7 @@ public:
 
     const std::string& name()               {   return _name;           }
     std::ostream& print(std::ostream& out)  {   return out << _name;    }
-    operator ExprSubType () const           {   return EST_Placeholder; }
+    ExprSubType get_type() const            {   return EST_Placeholder; }
     bool is_leaf()                          {   return true;            }
     virtual bool parens()                   {   return true;            }
 
