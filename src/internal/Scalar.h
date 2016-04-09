@@ -14,6 +14,8 @@ namespace internal{
 double get_value(SymExpr v);
 
 // Pre allocate common variables
+// not really to save memory but rather to save two allocation
+// one for the counter one for the expression
 SymExpr& minus_one();
 SymExpr& zero();
 SymExpr& one();
@@ -61,6 +63,20 @@ public:
     SymExpr substitute  (Context& c) {  return Scalar::make(_value); }
 
     T value() {    return _value; }
+
+    bool sym_equal(SymExpr& a) {
+
+        if (this->get_type() == a->get_type()){
+            Scalar<T>* p = dynamic_cast<Scalar<T>*>(a.get());
+            return p->value() == this->value();
+        }
+
+        return false;
+    }
+
+    bool equal(SymExpr& a) {   return sym_equal(a);     }
+
+    std::string to_string(){ return internal::to_string(get_type()) + ": " + std::to_string(value()); }
 
 private:
     T _value;

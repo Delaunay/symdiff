@@ -2,6 +2,8 @@
 #include "internal/Placeholder.h"
 #include "internal/Definitions.h"
 
+#include <unordered_map>
+
 namespace symdiff{
 
 Sym neg(Sym expr)      { return internal::Opposite::make(expr); }
@@ -14,7 +16,7 @@ Sym mult(Sym a, Sym b) { return internal::Mult::make(a, b);    }
 
 Sym sub(Sym a, Sym b)  { return add(a, neg(b));      }
 Sym div(Sym a, Sym b)  { return mult(a, inv(b));     }
-Sym pow(Sym a, Sym b)  { return exp(mult(b, ln(a))); }
+Sym pow(Sym a, Sym b)  { return internal::Pow::make(a, b);} //return exp(mult(b, ln(a))); }
 
 Sym minus_one()  { return Sym(internal::minus_one()); }
 Sym zero()       { return Sym(internal::zero()); }
@@ -27,7 +29,7 @@ Sym make_var(const std::string& v) {
     return internal::Placeholder::make(v);
 }
 
-Sym make_named_val(const std::string& name, double v){
+Sym make_val(const std::string& name, double v){
     return internal::MathConstant::make(name, v);
 }
 
@@ -35,5 +37,22 @@ Sym make_val(double b){
     return internal::ScalarDouble::make(b);
 }
 
+Sym make_global(const std::string& v){
+    static std::unordered_map<std::string, Sym> _val;
+
+    if (_val.find(v) == _val.end())
+        _val[v] = make_var(v);
+
+    return _val[v];
+}
+
+Sym make_global_val(const std::string& v, double val){
+    static std::unordered_map<std::string, Sym> _val;
+
+    if (_val.find(v) == _val.end())
+        _val[v] = make_val(v, val);
+
+    return _val[v];
+}
 
 }

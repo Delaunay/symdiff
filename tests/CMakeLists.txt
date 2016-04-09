@@ -33,4 +33,5 @@ TEST_MACRO(opposite ${symdiff_libraries})
 TEST_MACRO(ln       ${symdiff_libraries})
 TEST_MACRO(exp      ${symdiff_libraries})
 TEST_MACRO(pow      ${symdiff_libraries})
+TEST_MACRO(equiv    ${symdiff_libraries})
 

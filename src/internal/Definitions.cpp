@@ -17,6 +17,7 @@ SymExpr Add::make(SymExpr lhs, SymExpr rhs){
 
     //      Add Collapse
     // -----------------------
+    // /!\ Scalar Node Order
 
     // (a + a + a + a)
     // (a + (a + (a + a)))
@@ -59,6 +60,7 @@ SymExpr Mult::make(SymExpr lhs, SymExpr rhs){
 
     //      Mult Collapse
     // -----------------------
+    // /!\ Scalar Node Order
 
     // (a * a * a * a)
     // (a * (a * (a * a)))

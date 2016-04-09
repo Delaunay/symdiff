@@ -18,11 +18,18 @@ void reorder(SymExpr& a, SymExpr& b);
 // Memory equal     (same ptr)
 inline bool eq_mem(SymExpr& a, SymExpr& b) {   return a.get() == b.get();  }
 
-// Symbolic equal   (same tree structure)
-inline bool eq_sym(SymExpr& a, SymExpr& b) {   return false; }
+// Symbolic equal  (same tree structure)
+// Symbolic equal can return false in some case where
+// nodes are associative if scalar nodes are not ordered
+bool eq_sym(SymExpr& a, SymExpr& b);
 
 // eq_mem is more efficient. It is done first.
-inline bool equiv(SymExpr& a, SymExpr& b)  { return eq_mem(a, b) || eq_sym(a, b);  }
+inline bool equiv(SymExpr& a, SymExpr& b)  {
+    if (eq_mem(a, b))
+        return true;
+
+    return eq_sym(a, b);
+}
 
 
 class UnaryOperator: public Expression
@@ -75,6 +82,16 @@ public:
     #undef UNARY_APPLY
 
     SymExpr& expr() { return _expr;    }
+    bool sym_equal(SymExpr& a) { return this->get_type() == a->get_type();   }
+
+    bool equal(SymExpr& a) {
+        if (sym_equal(a)){
+            UnaryOperator* o = dynamic_cast<UnaryOperator*>(a.get());
+            return expr()->equal(o->expr());
+        }
+
+        return false;
+    }
 
 protected:
     SymExpr _expr;
@@ -141,10 +158,21 @@ public:
 
     #undef BINARY_APPLY
 
-    virtual bool parens() {  return true;   }
+    bool parens()    {  return true;   }
+    bool is_binary() {  return true;   }
+    bool sym_equal(SymExpr& a) { return this->get_type() == a->get_type();   }
 
     SymExpr& lhs() { return _lhs;    }
     SymExpr& rhs() { return _rhs;    }
+
+    bool equal(SymExpr& a) {
+        if (sym_equal(a)){
+            BinaryOperator* b = dynamic_cast<BinaryOperator*>(a.get());
+            return lhs()->equal(b->lhs()) && rhs()->equal(b->rhs()) ;
+        }
+
+        return false;
+    }
 
 protected:
     SymExpr _lhs;

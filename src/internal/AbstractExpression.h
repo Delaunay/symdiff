@@ -3,6 +3,10 @@
 
 #include "Context.h"
 
+// TODO
+// return a set of Placeholder variable inside a given expression
+// #include <unordered_set>
+
 namespace symdiff{
 
 namespace internal{
@@ -27,6 +31,8 @@ enum ExprSubType
     EST_Exp,
     EST_Ln,
 };
+
+std::string to_string(ExprSubType t);
 
 class Expression{
 public:
@@ -71,7 +77,14 @@ public:
     virtual bool is_one()    {  return false;   }
     virtual bool is_scalar() {  return false;   }
     virtual bool is_leaf()   {  return false;   }
+    virtual bool is_binary() {  return false;   }
     virtual bool parens()    {  return false;   }   // For more pretty printing
+
+    // sym_equal test only if a node b is of the same type
+    // Binary/Unary EST_Type == EST_type
+    // Placeholder  _name == _name
+    // Scalar       _value == _value
+    virtual bool sym_equal(SymExpr& ) { return false;   }
 
     // basic graph transformation
     virtual double full_eval(Context& c)  = 0;
@@ -84,6 +97,9 @@ public:
     // implicit conversion to ExprSubType so we can switch over expression
     // not used
     virtual ExprSubType get_type() const = 0;
+    virtual std::string to_string(){ return internal::to_string(this->get_type()); }
+
+    virtual bool equal(SymExpr& a) = 0;
 
 private:
 };

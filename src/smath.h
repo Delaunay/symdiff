@@ -9,7 +9,7 @@
 
 namespace symdiff
 {
-    inline Sym sqrt(Sym x) {   return pow(x, make_val(0.5)); }
+    inline Sym sqrt(Sym x) {   return pow(x, 0.5); }
 
     inline Sym gaussian_pdf(Sym m, Sym s){
         auto x = make_var("x");
@@ -21,8 +21,8 @@ namespace symdiff
     }
 
     inline Sym gaussian_pdf(double mean, double sd){
-        Sym m = make_named_val("m", mean);
-        Sym s = make_named_val("s", sd);
+        Sym m = make_val("m", mean);
+        Sym s = make_val("s", sd);
 
         return gaussian_pdf(m, s);
     }

@@ -2,6 +2,7 @@
 #define SYMDIF_SYM_HEADER
 
 #include "internal/AbstractExpression.h"
+#include "internal/Utils.h"
 
 namespace symdiff{
 
@@ -45,18 +46,29 @@ public:
     Sym operator/ (Sym val){   return div(_v, val);  }
     Sym operator^ (Sym val){   return pow(_v, val);  }
 
+    bool       equal(const Sym& a) const { return _v->equal(a._v);    }
+    bool operator== (const Sym& b) const { return this->equal(b);     }
+
     std::ostream& print(std::ostream& out) {    return _v->print(out);      }
     Sym derivate(const std::string& name)  {    return _v->derivate(name);  }
 
-    double full_eval(Context& c) {    return _v->full_eval(c);     }
-    Sym partial_eval(Context& c) {    return _v->partial_eval(c);  }
-    Sym substitute(Context& c) {    return _v->substitute(c);  }
-    Sym eval(Context c) {  return _v->partial_eval(c); }
-    Sym reduce() {  Context c; return _v->partial_eval(c);  }
+    double full_eval(Context& c) {  return _v->full_eval(c);    }
+    Sym partial_eval(Context& c) {  return _v->partial_eval(c); }
+    Sym substitute(Context& c)   {  return _v->substitute(c);   }
+    Sym eval(Context c)          {  return _v->partial_eval(c); }
+    Sym reduce()      {  Context c; return _v->partial_eval(c); }
 
     // Implicit cast to SymExpr
     // needed because Context use SymExpr i.e make_val must be converted to SymExpr
     operator SymExpr(){  return _v; }
+
+    // required for unordered_map
+    Sym() {}
+
+    // Implicit conversion double -> Sym
+    Sym(double v):
+        _v(make_val(v))
+    {}
 
 private:
     // force everything public to be Sym
@@ -66,11 +78,14 @@ private:
         _v(v)
     {}
 
-    internal::SymExpr _v;
+    mutable internal::SymExpr _v;
 
     friend Sym make_var(const std::string &v);
     friend Sym make_val(double b);
-    friend Sym make_named_val(const std::string& v, double b);
+    friend Sym make_val(const std::string& v, double b);
+    friend Sym make_global_val(const std::string& v, double val);
+    friend Sym make_global(const std::string& v);
+
     friend Sym neg(Sym expr);
     friend Sym inv(Sym expr);
     friend Sym ln(Sym expr);
@@ -91,9 +106,15 @@ private:
     friend Sym pi();
 };
 
-
+// implicit => make_local
 Sym make_var(const std::string& v);
-Sym make_named_val(const std::string& v, double b);
+Sym make_val(const std::string& v, double b);
+
+// make global keep tracks of defined variables
+// if the variable already exists its ptr is returned
+// instead of creating another one
+Sym make_global(const std::string& v);
+Sym make_global_val(const std::string& v, double val);
 
 typedef std::pair<std::string, Sym> Arg;
 

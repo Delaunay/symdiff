@@ -9,17 +9,6 @@ relatively simple example of how it could be implemented.
 * py/ for symbolic diff in python
 * src/ for symbolic diff in C++
 
-C++ and python implementation are becoming quite different.
-In the C++ implementation, I decided to limit the number of defined nodes to
-the minimum.
-    Example:
-        pow(x, n)" = exp(n * ln (x))    (problematic if x <= 0)
-        div(a, b)" = mult(a, inv(b))
-        sub(a, b)" = add(a, mult(-1, b))
-
-Which can make some function quite hard to read once printed.
-
-
 # Python
 
     x = Unknown('x')
@@ -76,8 +65,7 @@ Which can make some function quite hard to read once printed.
 
 # TODO
 
-* implement nodes equality checking
-* factorize/expand: (factorization need node equality)
+* factorize/expand
 * tests
     Would be nice to be able to parse a string
         f = expr
@@ -94,6 +82,7 @@ Which can make some function quite hard to read once printed.
 
 # IDEA
 
+* Type system
 * Check if Graph can be 'easily' balanced
 * Check if we can use threads to compute two different branches
 * Check shared_ptr and thread
@@ -104,19 +93,31 @@ Which can make some function quite hard to read once printed.
      level 1 - Threading
 
      Thread 1 | Thread 2
-              *
+              *                 level 0 - 1 Possible Thread
            /  |  \
           /   |   \
-         +    |    +
+         +    |    +            level 1 - 2 possible Thread
        /   \  |  /   \
-      a     b | c     d
+      a     b | c     d         level 2 - 4 Possible Thread
               |
 
-    We cannot spawn thread at each nodes they are too many of them.
-    but we could spam per level
+    We cannot spawn thread at each nodes there are too many of them.
+    but we could spam per level.
+
+    Seek the level best fitting our threading capability.
+
+    NB: Number of possible thread per level is not necessarily even. (Unary Nodes)
+
 
 * Add Tensor
+    Placeholder could be generalized
+    ConstTensor
+
 * Add Flow control ?
+
+* Cached eval result
+
+
 
 
 

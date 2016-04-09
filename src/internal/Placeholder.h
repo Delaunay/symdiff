@@ -30,6 +30,8 @@ public:
         return zero();
     }
 
+    // Variable could be hashed by their ptr value instead of their name
+    // Why not both ? yeaaaah
     double full_eval(Context& c){
         if (c.find(_name) != c.end())
             return c[_name]->full_eval(c);
@@ -50,6 +52,20 @@ public:
 
     SymExpr partial_eval(Context& c) {  return apply(c);    }
     SymExpr substitute(Context& c)   {  return apply(c);    }
+
+    bool equal(SymExpr& a) {   return sym_equal(a);     }
+
+    bool sym_equal(SymExpr& a) {
+
+        if (this->get_type() == a->get_type()){
+            Placeholder* p = dynamic_cast<Placeholder*>(a.get());
+            return p->name() == this->name();
+        }
+
+        return false;
+    }
+
+    std::string to_string(){ return internal::to_string(get_type()) + ": " + name(); }
 
 private:
     std::string _name;

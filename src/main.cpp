@@ -31,7 +31,7 @@ int main(){
 
 
     Context v = {
-        {"x", y * y},
+        {"x", make_val(0.25)},
         {"y", make_val(0.25)}
     };
 
