@@ -5,33 +5,33 @@
 namespace symdiff {
 namespace internal {
 
-SymExpr minus_one(){
+SymExpr& minus_one(){
     static SymExpr o = Expression::make<ScalarDouble>(-1);
     return o;
 }
 
-SymExpr zero(){
+SymExpr& zero(){
     static SymExpr z = Expression::make<ScalarDouble>(0);
     return z;
 }
 
-SymExpr one(){
+SymExpr& one(){
     static SymExpr o = Expression::make<ScalarDouble>(1);
     return o;
 }
 
-SymExpr two(){
+SymExpr& two(){
     static SymExpr o = Expression::make<ScalarDouble>(2);
     return o;
 }
 
 
-SymExpr pi(){
+SymExpr& pi(){
     static SymExpr o = Expression::make<MathConstant>("pi", 3.141592653589793);
     return o;
 }
 
-SymExpr e(){
+SymExpr& e(){
     static SymExpr o = Expression::make<MathConstant>("e", 2.718281828459045);
     return o;
 }

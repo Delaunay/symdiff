@@ -52,16 +52,27 @@ public:
         return function()(_expr->full_eval(c));
     }
 
+    // I think this could be done using template code
+    // Must check if std::mem_fun can be used
+    #define UNARY_APPLY(Node, fun) { \
+            SymExpr expr = _expr->fun(c);\
+            return Node::make(_expr);\
+        }
+
     template<typename Node>
     SymExpr partial_eval(Context& c) {
+        SymExpr expr = _expr->partial_eval(c);
 
-        SymExpr v = _expr->partial_eval(c);
+        if (expr->is_scalar())
+            return ScalarDouble::make(function()(get_value(expr)));
 
-        if (v->is_scalar())
-            return ScalarDouble::make(function()(get_value(v)));
-
-        return Node::make(v);
+        return Node::make(_expr);
     }
+
+    template<typename Node>
+    SymExpr substitute(Context& c)   {  UNARY_APPLY(Node, substitute);     }
+
+    #undef UNARY_APPLY
 
     SymExpr& expr() { return _expr;    }
 
@@ -104,22 +115,31 @@ public:
         return function()(_lhs->full_eval(c), _rhs->full_eval(c));
     }
 
+    // I think this could be done using template code
+    // Must check if std::mem_fun can be used
+    #define BINARY_APPLY(Node, fun) { \
+            SymExpr lhs = _lhs->fun(c);\
+            SymExpr rhs = _rhs->fun(c);\
+        \
+            return Node::make(lhs, rhs);\
+        }
+
     template<typename Node>
     SymExpr partial_eval(Context& c) {
-
         SymExpr lhs = _lhs->partial_eval(c);
         SymExpr rhs = _rhs->partial_eval(c);
 
-        // simplify
-        if (lhs->is_scalar() && rhs->is_scalar()){
-            double r = get_value(rhs);
-            double l = get_value(lhs);
-            return ScalarDouble::make(function()(r, l));
-        }
+        if (lhs->is_scalar() && rhs->is_scalar())
+            return ScalarDouble::make(function()(get_value(lhs), get_value(rhs)));
 
-        // carry
         return Node::make(lhs, rhs);
-    }
+
+     }
+
+    template<typename Node>
+    SymExpr substitute(Context& c)   {  BINARY_APPLY(Node, substitute);     }
+
+    #undef BINARY_APPLY
 
     virtual bool parens() {  return true;   }
 
@@ -182,6 +202,10 @@ protected:
             derivative\
         }\
     \
+        SymExpr substitute(Context& c) {\
+            return UnaryOperator::substitute<Name>(c);\
+        }\
+    \
         ExprSubType get_type() const  { return ExprSubTypeID; }\
     }
 
@@ -207,6 +231,10 @@ protected:
     \
         SymExpr derivate(const std::string& name) {\
             derivative\
+        }\
+    \
+        SymExpr substitute(Context& c) {\
+            return BinaryOperator::substitute<Name>(c);\
         }\
     \
         ExprSubType get_type() const  { return ExprSubTypeID; }\

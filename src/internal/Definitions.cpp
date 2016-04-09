@@ -44,10 +44,6 @@ SymExpr Add::make(SymExpr lhs, SymExpr rhs){
             return zero();
     }
 
-    // Base Case
-    if (lhs->is_scalar() && rhs->is_scalar())   // NB: function() cant be called because T::make is static
-        return ScalarDouble::make(get_value(lhs) + get_value(rhs));
-
     return Expression::make<Add>(lhs, rhs);
 }
 
@@ -89,10 +85,6 @@ SymExpr Mult::make(SymExpr lhs, SymExpr rhs){
             return one();
     }
 
-    // Base Case
-    if (lhs->is_scalar() && rhs->is_scalar())
-        return ScalarDouble::make(get_value(lhs) * get_value(rhs));
-
     return Expression::make<Mult>(lhs, rhs);
 }
 
@@ -113,10 +105,6 @@ SymExpr Pow::make(SymExpr expr, SymExpr power){
         return Pow::make(m->lhs(), Mult::make(m->rhs(), power));
     }
 
-    // Base Case
-    if (expr->is_scalar() && power->is_scalar())
-        return ScalarDouble::make(std::pow(get_value(expr), get_value(power)));
-
     return Expression::make<Pow>(expr, power);
 }
 
@@ -131,11 +119,6 @@ SymExpr Opposite::make(SymExpr expr){
         return o->expr();
     }
 
-    // Base Case
-    if (expr->is_scalar()){
-        return ScalarDouble::make(- get_value(expr));
-    }
-
     return Expression::make<Opposite>(expr);
 }
 
@@ -147,11 +130,6 @@ SymExpr Inverse::make(SymExpr expr){
     if (expr->get_type() == EST_Inv){
         Inverse* o = dynamic_cast<Inverse*>(expr.get());
         return o->expr();
-    }
-
-    // Base Case
-    if (expr->is_scalar()){
-        return ScalarDouble::make(1.0 / get_value(expr));
     }
 
     return Expression::make<Inverse>(expr);
@@ -170,11 +148,6 @@ SymExpr Exp::make(SymExpr expr){
         return o->expr();
     }
 
-    // Base Case
-    if (expr->is_scalar()){
-        return ScalarDouble::make(std::exp(get_value(expr)));
-    }
-
     return Expression::make<Exp>(expr);
 }
 
@@ -189,11 +162,6 @@ SymExpr Ln::make(SymExpr expr){
     if (expr->get_type() == EST_Exp){
         UnaryOperator* o = dynamic_cast<UnaryOperator*>(expr.get());
         return o->expr();
-    }
-
-    // Base Case
-    if (expr->is_scalar()){
-        return ScalarDouble::make(std::log(get_value(expr)));
     }
 
     return Expression::make<Ln>(expr);

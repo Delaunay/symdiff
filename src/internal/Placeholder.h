@@ -36,17 +36,20 @@ public:
         throw FullEvalError("Placeholder variable was not set");
     }
 
-    SymExpr partial_eval(Context& c) {
-        if (c.find(_name) != c.end())
-            return c[_name];
-        return Placeholder::make(_name);
-    }
-
     const std::string& name()               {   return _name;           }
     std::ostream& print(std::ostream& out)  {   return out << _name;    }
     ExprSubType get_type() const            {   return EST_Placeholder; }
     bool is_leaf()                          {   return true;            }
     virtual bool parens()                   {   return true;            }
+
+    SymExpr apply(Context& c){
+        if (c.find(_name) != c.end())
+            return c[_name];
+        return Placeholder::make(_name);
+    }
+
+    SymExpr partial_eval(Context& c) {  return apply(c);    }
+    SymExpr substitute(Context& c)   {  return apply(c);    }
 
 private:
     std::string _name;

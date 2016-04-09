@@ -15,6 +15,8 @@ int main(){
 
     f.print(cout) << endl; */
 
+    auto x = make_var("x");
+    auto y = make_var("y");
 
     auto f = gaussian_pdf(0, 1);
 
@@ -29,7 +31,7 @@ int main(){
 
 
     Context v = {
-        {"x", make_val(0.25)},
+        {"x", y * y},
         {"y", make_val(0.25)}
     };
 
@@ -37,11 +39,17 @@ int main(){
 
     cout << v1 << " " << v2 << " " << v3 << endl;
 
-
-    auto x = make_var("x");
     f = (x + 2) + 3;
 
-    f.print(std::cout) << endl;
+    f.print(cout) << endl;
+
+    // Subsitute is equivalent to partial eval
+    // because of evaluation rule specified inside T::make
+    // I should remove them
+    auto sub = f.substitute(v);
+
+    sub.print(cout) << endl;
+    sub.reduce().print(cout) << endl;
 
     // same thing available for partial call/partial eval
 

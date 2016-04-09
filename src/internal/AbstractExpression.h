@@ -78,6 +78,9 @@ public:
     virtual SymExpr partial_eval(Context& c) = 0;
     virtual SymExpr derivate(const std::string& name) = 0;
 
+    virtual SymExpr substitute(Context& x) = 0;
+    virtual SymExpr reduce() {  Context c; return partial_eval(c);  }
+
     // implicit conversion to ExprSubType so we can switch over expression
     // not used
     virtual ExprSubType get_type() const = 0;

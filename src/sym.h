@@ -50,8 +50,9 @@ public:
 
     double full_eval(Context& c) {    return _v->full_eval(c);     }
     Sym partial_eval(Context& c) {    return _v->partial_eval(c);  }
+    Sym substitute(Context& c) {    return _v->substitute(c);  }
     Sym eval(Context c) {  return _v->partial_eval(c); }
-
+    Sym reduce() {  Context c; return _v->partial_eval(c);  }
 
     // Implicit cast to SymExpr
     // needed because Context use SymExpr i.e make_val must be converted to SymExpr

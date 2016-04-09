@@ -14,12 +14,12 @@ namespace internal{
 double get_value(SymExpr v);
 
 // Pre allocate common variables
-SymExpr minus_one();
-SymExpr zero();
-SymExpr one();
-SymExpr two();
-SymExpr pi();
-SymExpr e();
+SymExpr& minus_one();
+SymExpr& zero();
+SymExpr& one();
+SymExpr& two();
+SymExpr& pi();
+SymExpr& e();
 
 template<typename T>
 class Scalar: public Expression
@@ -52,10 +52,13 @@ public:
     virtual bool is_leaf()   {  return true;   }
     virtual bool parens()    {  return true;   }
 
-    // Transformation
+    // Transformations
     SymExpr derivate(const std::string& name){  return zero(); }
     double full_eval(Context& c)             {  return _value;  }
-    virtual SymExpr partial_eval(Context& c) {  return Scalar::make(_value); }
+
+    // Apply Function
+    SymExpr partial_eval(Context& c) {  return Scalar::make(_value); }
+    SymExpr substitute  (Context& c) {  return Scalar::make(_value); }
 
     T value() {    return _value; }
 

@@ -77,12 +77,7 @@ Which can make some function quite hard to read once printed.
 # TODO
 
 * implement nodes equality checking
-* substitution: implement substitution function (no evaluation)
-    * remove some evaluation related simplification
-
-* reduce: (eval without context)
 * factorize/expand: (factorization need node equality)
-* more simplification
 * tests
     Would be nice to be able to parse a string
         f = expr
