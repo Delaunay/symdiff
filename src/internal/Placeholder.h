@@ -40,6 +40,8 @@ public:
         throw FullEvalError("Placeholder variable was not set");
     }
 
+    std::ostream& gen(std::ostream& out, OutputType t) { return out << _name; }
+
     const std::string& name()               {   return _name;           }
     std::ostream& print(std::ostream& out)  {   return out << _name;    }
     ExprSubType get_type() const            {   return EST_Placeholder; }

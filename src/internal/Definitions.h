@@ -8,6 +8,11 @@
 #include "Utils.h"
 #include <cmath>
 
+// Function name used in gen(out, OutputType)
+#define SCHEME(x) x
+#define CPP(x) x
+#define STANDARD(x) x
+
 namespace symdiff{
 namespace internal{
 
@@ -67,7 +72,7 @@ DEFINE_BINARY(Pow, "^", EST_Pow, OUTLINE_MAKE,
 );
 
 
-DEFINE_UNARY(Inverse, "1 / ", EST_Inv, OUTLINE_MAKE,
+DEFINE_UNARY(Inverse, "/", EST_Inv, OUTLINE_MAKE,
     // Function to apply
     [](double v){ return 1.0 / v; },
 

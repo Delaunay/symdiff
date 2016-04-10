@@ -49,6 +49,7 @@ public:
     bool       equal(const Sym& a) const { return _v->equal(a._v);    }
     bool operator== (const Sym& b) const { return this->equal(b);     }
 
+    std::ostream& gen(std::ostream& out, OutputType t) {    return _v->gen(out, t);      }
     std::ostream& print(std::ostream& out) {    return _v->print(out);      }
     Sym derivate(const std::string& name)  {    return _v->derivate(name);  }
 

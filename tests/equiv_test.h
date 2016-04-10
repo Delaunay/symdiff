@@ -33,11 +33,5 @@ TEST(equiv, same_graph)
     EXPECT_EQ(elem1, elem2);
 }
 
-int main(int argc, char **argv)
-{
-    testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
 
-    return 0;
-}
 

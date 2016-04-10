@@ -3,7 +3,7 @@
 
 using namespace symdiff;
 
-TEST(inverse, eval)
+TEST(pow, eval)
 {
     auto x = make_var("x");
     auto y = make_var("y");
@@ -13,14 +13,5 @@ TEST(inverse, eval)
     double v = full_call(f, {{"y", make_val(3)}, {"x", make_val(3)}});
 
     EXPECT_DOUBLE_EQ( 27., v);
-}
-
-
-int main(int argc, char **argv)
-{
-    testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-
-    return 0;
 }
 

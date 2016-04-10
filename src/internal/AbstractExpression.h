@@ -9,27 +9,45 @@
 
 namespace symdiff{
 
+enum OutputType
+{
+    Standard, // Default, kinda standard looking output
+    Cpp,      // C++
+    Scheme,   // Lisp/Scheme like  syntax
+
+    // Latex
+    // Python
+};
+
 namespace internal{
 
 // Custom RTTI
 // Those are not directly related with operator precedence
+// But they respect it
+// We can use get_type() to determine if a Expr is a Leaf/Binary/Unary expr
 enum ExprSubType
 {
     // Leafs
-    EST_Scalar      = 100,
+    LEAF_SUBTYPE    = 100,
+    EST_Scalar,
     EST_Placeholder,
 
     // Nodes::Binary
-    EST_Add         = 200,
-    EST_Mult        = 300,
-    EST_Pow         = 400,
+    BINARY_SUBTYPE  = 200,
+    EST_Add,
+    EST_Mult,
+    EST_Pow,
 
     // Nodes::Unary
-    EST_Sub         = 1000,
+    UNARY_SUBTYPE   = 300,
+    EST_Sub,
     EST_Neg,
-    EST_Inv,
     EST_Exp,
     EST_Ln,
+
+    // For printing sake Inv must be last
+    // (/ a) b => b (/ a)
+    EST_Inv,
 };
 
 std::string to_string(ExprSubType t);
@@ -72,19 +90,24 @@ public:
         return this->get_type() < a.get_type();
     }
 
+    virtual std::ostream& gen(std::ostream& out, OutputType t) = 0;
+
     // used for simplification
     virtual bool is_nul()    {  return false;   }
     virtual bool is_one()    {  return false;   }
     virtual bool is_scalar() {  return false;   }
     virtual bool is_leaf()   {  return false;   }
     virtual bool is_binary() {  return false;   }
-    virtual bool parens()    {  return false;   }   // For more pretty printing
+    virtual bool parens()    {  return false;   }   // For pretty printing
 
-    // sym_equal test only if a node b is of the same type
+    // sym_equal test only if a node b is of the same 'type'
     // Binary/Unary EST_Type == EST_type
     // Placeholder  _name == _name
     // Scalar       _value == _value
     virtual bool sym_equal(SymExpr& ) { return false;   }
+
+    // Similar to sym equal but allow for special Pattern Node
+    virtual bool pattern_equal(SymExpr& ) {}
 
     // basic graph transformation
 

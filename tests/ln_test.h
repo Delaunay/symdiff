@@ -3,33 +3,23 @@
 
 using namespace symdiff;
 
-TEST(exp, eval)
+TEST(ln, eval)
 {
     auto x = make_var("x");
 
-    auto f = exp(x);
+    auto f = ln(x);
 
     double v = full_call(f, {{"x", make_val(2)}});
 
-    EXPECT_DOUBLE_EQ(std::exp(2), v);
+    EXPECT_DOUBLE_EQ(std::log(2), v);
 }
 
-
-TEST(exp, ln)
+TEST(ln, exp)
 {
     auto x = make_var("x");
 
-    SymExpr f = exp(ln(x));
+    SymExpr f = ln(exp(x));
 
     EXPECT_EQ(internal::EST_Placeholder, f->get_type());
-}
-
-
-int main(int argc, char **argv)
-{
-    testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-
-    return 0;
 }
 

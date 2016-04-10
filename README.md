@@ -9,6 +9,9 @@ relatively simple example of how it could be implemented.
 * py/ for symbolic diff in python
 * src/ for symbolic diff in C++
 
+If you are using MinGW. You need to disable pthreads om windows
+(cmake -Dgtest_disable_pthreads=ON)
+
 # Python
 
     x = Unknown('x')
@@ -81,6 +84,14 @@ relatively simple example of how it could be implemented.
             success ()
 
 # IDEA
+
+* find_node(mult(2, add(3, 4))
+* find_pattern(mult(any, add(any, any)))    // Any is a special node that can not be evaluated
+* find_all_node
+* find_all_pattern
+
+* replace(Pattern, Sym by)
+* replace(node, Sym by)
 
 * Type system
 * Check if Graph can be 'easily' balanced

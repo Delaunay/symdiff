@@ -48,14 +48,28 @@ public:
 
     std::ostream& print(std::ostream& out, const std::string& op) {
 
-        if (_expr->parens()){
-            out << op << '('; _expr->print(out) << ')';
+        if (_expr->is_leaf()){
+            out << op << " "; _expr->print(out);
         }
         else{
-             out << op; _expr->print(out);
+            out << op << " ("; _expr->print(out) << ")";
         }
 
         return out;
+    }
+
+    std::ostream& gen(std::ostream& out, const std::string& op, OutputType t) {
+        switch (t){
+            case Standard:
+                return this->print(out, op);
+            case Cpp: // CPP printing is not homogenous accros Operators
+                return this->print(out, op);
+            case Scheme:
+                out << '(' << op << ' '; _expr->gen(out, t) << ')';
+                return out;
+            default:
+                return this->print(out, op);
+        }
     }
 
     double full_eval(Context& c)    {   return function()(_expr->full_eval(c)); }
@@ -110,22 +124,39 @@ public:
 
     std::ostream& print(std::ostream& out, const std::string& op) {
 
-        // as far as I can tell this works
-        // if parens are not present this most likely the place to check
-        if (_lhs->parens() && _rhs->parens()){
-            out << '(';
-                _lhs->print(out);
-            out << " " << op << " ";
-                _rhs->print(out);
-            out << ')';
-        }
-        else{
-                _lhs->print(out);
-            out << " " << op << " ";
-                _rhs->print(out);
-        }
+        ExprSubType c = get_type();
+        ExprSubType l = _lhs->get_type();
+        ExprSubType r = _rhs->get_type();
+
+        if (l < c && !_lhs->is_leaf()) out << '(';
+            _lhs->print(out);
+        if (l < c && !_lhs->is_leaf()) out << ')';
+
+        // Transform +- to - and */ to /
+        if ((c != EST_Mult || r != EST_Inv) && (c != EST_Add  || r != EST_Neg))
+             out << " " << op;
+
+        out << " ";
+
+        if (r < c && !_rhs->is_leaf()) out << '(';
+            _rhs->print(out);
+        if (r < c && !_rhs->is_leaf()) out << ')';
 
         return out;
+    }
+
+    std::ostream& gen(std::ostream& out, const std::string& op, OutputType t) {
+        switch (t){
+            case Standard:
+                return this->print(out, op);
+            case Cpp:  // CPP printing is not homogenous accros Operators
+                return this->print(out, op);
+            case Scheme:
+                out << '(' << op << ' '; _lhs->gen(out, t) << ' '; _rhs->gen(out, t) << ')';
+                return out;
+            default:
+                return this->print(out, op);
+        }
     }
 
     virtual BinaryFunction function() = 0;
@@ -289,6 +320,10 @@ protected:
             return UnaryOperator::print(out, repr_name);\
         }\
     \
+        std::ostream& gen(std::ostream& out, OutputType t) {\
+            return UnaryOperator::gen(out, repr_name, t);\
+        }\
+    \
         SymExpr partial_eval(Context &c){\
             return UnaryOperator::partial_eval<Name>(c);\
         }\
@@ -322,6 +357,10 @@ protected:
     \
         std::ostream& print(std::ostream& out) {\
             return BinaryOperator::print(out, repr_name);\
+        }\
+    \
+        std::ostream& gen(std::ostream& out, OutputType t) {\
+            return BinaryOperator::gen(out, repr_name, t);\
         }\
     \
         SymExpr partial_eval(Context &c){\

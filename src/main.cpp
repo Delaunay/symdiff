@@ -15,12 +15,16 @@ int main(){
 
     f.print(cout) << endl; */
 
+
+
     auto x = make_var("x");
     auto y = make_var("y");
 
-    auto f = gaussian_pdf(0, 1);
+    auto f = gaussian_pdf(1, 2);
 
-    f.print(std::cout) << endl;
+    f.gen(std::cout, Standard) << endl;
+    f.gen(std::cout, Cpp) << endl;
+    f.gen(std::cout, Scheme) << endl;
     //f.derivate("x").print(std::cout) << endl;
 
                 // context is created at compile time (Variadic args)

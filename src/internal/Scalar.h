@@ -46,6 +46,7 @@ public:
     }
 
     std::ostream& print(std::ostream& out) {    return out << _value; }
+    std::ostream& gen(std::ostream& out, OutputType t) { return out << _value; }
 
     // Helpers
     ExprSubType get_type() const { return EST_Scalar; }
@@ -53,7 +54,7 @@ public:
     virtual bool is_one()    {  return _value == 1;   }
     virtual bool is_scalar() {  return true;   }
     virtual bool is_leaf()   {  return true;   }
-    virtual bool parens()    {  return true;   }
+    virtual bool parens()    {  return false;   }
 
     // Transformations
     SymExpr derivate(const std::string& name){  return zero(); }
@@ -102,6 +103,7 @@ public:
     {}
 
     std::ostream& print(std::ostream& out) {    return out << _name; }
+    std::ostream& gen(std::ostream& out, OutputType t) { return out << _name; }
 
     static SymExpr make(const std::string& name, double v){
         return Expression::make<MathConstant>(name, v);
