@@ -87,8 +87,14 @@ public:
     virtual bool sym_equal(SymExpr& ) { return false;   }
 
     // basic graph transformation
+
     virtual double full_eval(Context& c)  = 0;
     virtual SymExpr partial_eval(Context& c) = 0;
+
+    virtual double full_eval(PtrContext& c)  = 0;
+    virtual SymExpr partial_eval(PtrContext& c) = 0;
+
+    // virtual SymExpr derivate(const SymExpr& name) = 0;
     virtual SymExpr derivate(const std::string& name) = 0;
 
     virtual SymExpr substitute(Context& x) = 0;

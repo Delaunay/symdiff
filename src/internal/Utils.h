@@ -7,6 +7,10 @@
  */
 
 #include "Scalar.h"
+
+#include <vector>
+#include <algorithm>
+
 #include <functional>
 
 namespace symdiff{
@@ -31,7 +35,6 @@ inline bool equiv(SymExpr& a, SymExpr& b)  {
     return eq_sym(a, b);
 }
 
-
 class UnaryOperator: public Expression
 {
 public:
@@ -55,9 +58,8 @@ public:
         return out;
     }
 
-    double full_eval(Context& c){
-        return function()(_expr->full_eval(c));
-    }
+    double full_eval(Context& c)    {   return function()(_expr->full_eval(c)); }
+    double full_eval(PtrContext& c) {   return function()(_expr->full_eval(c)); }
 
     // I think this could be done using template code
     // Must check if std::mem_fun can be used
@@ -66,8 +68,8 @@ public:
             return Node::make(_expr);\
         }
 
-    template<typename Node>
-    SymExpr partial_eval(Context& c) {
+    template<typename Node, typename Ctx>
+    SymExpr partial_eval(Ctx& c) {
         SymExpr expr = _expr->partial_eval(c);
 
         if (expr->is_scalar())
@@ -132,6 +134,10 @@ public:
         return function()(_lhs->full_eval(c), _rhs->full_eval(c));
     }
 
+    double full_eval(PtrContext& c){
+        return function()(_lhs->full_eval(c), _rhs->full_eval(c));
+    }
+
     // I think this could be done using template code
     // Must check if std::mem_fun can be used
     #define BINARY_APPLY(Node, fun) { \
@@ -141,8 +147,8 @@ public:
             return Node::make(lhs, rhs);\
         }
 
-    template<typename Node>
-    SymExpr partial_eval(Context& c) {
+    template<typename Node, typename Ctx>
+    SymExpr partial_eval(Ctx& c) {
         SymExpr lhs = _lhs->partial_eval(c);
         SymExpr rhs = _rhs->partial_eval(c);
 
@@ -174,9 +180,70 @@ public:
         return false;
     }
 
+
 protected:
     SymExpr _lhs;
     SymExpr _rhs;
+};
+
+
+class NnaryOperator: public Expression
+{
+public:
+    typedef std::vector<SymExpr> Args;
+
+    NnaryOperator(const Args& args):
+        _args(args)
+    {}
+
+    bool parens()       {  return true;   }
+    SymExpr& arg(int i) { return _args[i];    }
+
+    bool sym_equal(SymExpr& a) { return this->get_type() == a->get_type();   }
+    bool equal(SymExpr& a) {
+        if (sym_equal(a)){
+            NnaryOperator* b = dynamic_cast<NnaryOperator*>(a.get());
+
+            if (this->size() != b->size())
+                return false;
+
+            for(int i = 0; i < size(); ++i){
+                if (!(arg(i)->equal(b->arg(i))))
+                    return false;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    template<typename Node, typename Ctx>
+    SymExpr partial_eval(Ctx& c) {
+        // a function call would stuff those in a new context
+
+        std::vector<SymExpr> pargs; pargs.reserve(size());
+
+        std::transform(_args.begin(), _args.end(), std::back_inserter(pargs),
+            [&c](SymExpr& v){
+            return v->partial_eval(c);
+        });
+
+        // Hummm
+
+
+
+        //if (lhs->is_scalar() && rhs->is_scalar())
+        //    return ScalarDouble::make(function()(get_value(lhs), get_value(rhs)));
+
+        return Node::make(pargs);
+
+     }
+
+    std::size_t size() const {  return _args.size();    }
+
+protected:
+    Args _args;
 };
 
 //                             MACROS
@@ -226,6 +293,10 @@ protected:
             return UnaryOperator::partial_eval<Name>(c);\
         }\
     \
+        SymExpr partial_eval(PtrContext &c){\
+            return UnaryOperator::partial_eval<Name>(c);\
+        }\
+    \
         SymExpr derivate(const std::string& name) {\
             derivative\
         }\
@@ -254,6 +325,10 @@ protected:
         }\
     \
         SymExpr partial_eval(Context &c){\
+            return BinaryOperator::partial_eval<Name>(c);\
+        }\
+    \
+        SymExpr partial_eval(PtrContext &c){\
             return BinaryOperator::partial_eval<Name>(c);\
         }\
     \

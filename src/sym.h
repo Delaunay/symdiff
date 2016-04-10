@@ -54,6 +54,8 @@ public:
 
     double full_eval(Context& c) {  return _v->full_eval(c);    }
     Sym partial_eval(Context& c) {  return _v->partial_eval(c); }
+    double full_eval(PtrContext& c) {  return _v->full_eval(c);    }
+    Sym partial_eval(PtrContext& c) {  return _v->partial_eval(c); }
     Sym substitute(Context& c)   {  return _v->substitute(c);   }
     Sym eval(Context c)          {  return _v->partial_eval(c); }
     Sym reduce()      {  Context c; return _v->partial_eval(c); }
@@ -126,7 +128,7 @@ void build_ctx(Context& a, T arg1){
 template<typename T, typename... Args>
 void build_ctx(Context& a,T arg1, Args... args){
     a[arg1.first] = arg1.second;
-    buid_ctx(a, args...);
+    build_ctx(a, args...);
 }
 
 template<typename... Args>

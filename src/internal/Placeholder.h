@@ -8,6 +8,8 @@
 #include "Scalar.h"
 #include "Errors.h"
 
+#include <memory>
+
 namespace symdiff {
 namespace internal{
 
@@ -52,6 +54,20 @@ public:
 
     SymExpr partial_eval(Context& c) {  return apply(c);    }
     SymExpr substitute(Context& c)   {  return apply(c);    }
+
+    double full_eval(PtrContext& c) {
+        if (c.find(this) != c.end())
+            return c[this]->full_eval(c);
+        throw FullEvalError("Placeholder variable was not set");
+    }
+
+    SymExpr partial_eval(PtrContext& c){
+        if (c.find(this) != c.end())
+            return c[this]->partial_eval(c);
+
+        // We lose old address;
+        return Placeholder::make(_name);
+    }
 
     bool equal(SymExpr& a) {   return sym_equal(a);     }
 

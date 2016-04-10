@@ -6,6 +6,7 @@
  */
 
 #include "AbstractExpression.h"
+#include <memory>
 
 namespace symdiff {
 namespace internal{
@@ -57,6 +58,12 @@ public:
     // Transformations
     SymExpr derivate(const std::string& name){  return zero(); }
     double full_eval(Context& c)             {  return _value;  }
+
+    double full_eval(PtrContext& c)     {  return _value;  }
+    SymExpr partial_eval(PtrContext& c) {
+        // we lose old address
+        return Scalar::make(_value);
+    }
 
     // Apply Function
     SymExpr partial_eval(Context& c) {  return Scalar::make(_value); }

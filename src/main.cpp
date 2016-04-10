@@ -24,7 +24,7 @@ int main(){
     //f.derivate("x").print(std::cout) << endl;
 
                 // context is created at compile time (Variadic args)
-    auto v1 = full_call(f, Arg("x", make_val(0.25)));
+    auto v1 = full_call(f, Arg("x", make_val(0.25)), Arg("y", make_val(0.25)));
 
                 // temporary context
     auto v2 = full_call(f, {{"x", make_val(0.25)}, {"y", make_val(0.25)}});
@@ -35,9 +35,15 @@ int main(){
         {"y", make_val(0.25)}
     };
 
-    auto v3 = f.full_eval(v);
+    PtrContext p = {
+        {SymExpr(x).get(), make_val(0.25)}
+    };
 
-    cout << v1 << " " << v2 << " " << v3 << endl;
+    auto v3 = f.partial_eval(p);
+
+    v3.print(cout) << endl;
+
+    cout << v1 << " " << v2 << " " << endl;
 
     f = (x + 2) + 3;
 
