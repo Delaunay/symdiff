@@ -25,6 +25,11 @@ Sym two()        { return Sym(internal::two()); }
 Sym e()          { return Sym(internal::e()); }
 Sym pi()         { return Sym(internal::pi()); }
 
+Sym leaf()      {   return Sym(internal::leaf()); }
+Sym unary()     {   return Sym(internal::unary()); }
+Sym binary()    {   return Sym(internal::binary()); }
+Sym any()       {   return Sym(internal::any()); }
+
 Sym make_var(const std::string& v) {
     return internal::Placeholder::make(v);
 }

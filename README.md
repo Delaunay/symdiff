@@ -85,6 +85,7 @@ If you are using MinGW. You need to disable pthreads om windows
 
 # IDEA
 
+Those are almost done I need just a little modification to current code
 * find_node(mult(2, add(3, 4))
 * find_pattern(mult(any, add(any, any)))    // Any is a special node that can not be evaluated
 * find_all_node

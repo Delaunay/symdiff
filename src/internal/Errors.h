@@ -26,6 +26,11 @@ public:
     CastError(const std::string& str): Error(str) {}
 };
 
+class EvalError: public Error{
+public:
+    EvalError(const std::string& str): Error(str) {}
+};
+
 
 }
 

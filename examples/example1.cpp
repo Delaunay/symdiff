@@ -7,6 +7,16 @@ using namespace std;
 int main(){
 
 
+    auto x = make_var("x");
+
+    auto f = exp(exp(ln(x * x + ln(x - one()) - ln(one() / ln(x)))));
+
+    f.print(std::cout) << std::endl;
+
+    auto df = f.derivate("x");
+
+    df.reduce().print(std::cout) << std::endl;
+
 /*
     auto x = make_var("x");
 
@@ -16,7 +26,7 @@ int main(){
     f.print(cout) << endl; */
 
 
-
+/*
     auto x = make_var("x");
     auto y = make_var("y");
 
@@ -25,6 +35,13 @@ int main(){
     f.gen(std::cout, Standard) << endl;
     f.gen(std::cout, Cpp) << endl;
     f.gen(std::cout, Scheme) << endl;
+
+    std::cout << f.depth() << std::endl;
+
+    auto depth = f.two_depth();
+
+    std::cout << depth.first << " " << depth.second << endl;
+
     //f.derivate("x").print(std::cout) << endl;
 
                 // context is created at compile time (Variadic args)

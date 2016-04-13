@@ -1,5 +1,5 @@
-#ifndef SYMDIF_UTILS_HEADER
-#define SYMDIF_UTILS_HEADER
+#ifndef SYMDIF_INTERNAL_UTILS_HEADER
+#define SYMDIF_INTERNAL_UTILS_HEADER
 /*
  *  Descriptions:
  *    - Define Abstract Unary and Binary Nodes
@@ -74,6 +74,7 @@ public:
 
     double full_eval(Context& c)    {   return function()(_expr->full_eval(c)); }
     double full_eval(PtrContext& c) {   return function()(_expr->full_eval(c)); }
+    int depth(int i = 0) {  return  _expr->depth(i + 1);   }
 
     // I think this could be done using template code
     // Must check if std::mem_fun can be used
@@ -106,8 +107,13 @@ public:
             return expr()->equal(o->expr());
         }
 
+        if (a->is_pattern())
+            return pattern_equal(a);
+
         return false;
     }
+
+    bool pattern_equal(SymExpr& a) { return !a->is_binary();   }
 
 protected:
     SymExpr _expr;
@@ -201,6 +207,7 @@ public:
 
     SymExpr& lhs() { return _lhs;    }
     SymExpr& rhs() { return _rhs;    }
+    int depth(int i = 0) {  return std::max(_lhs->depth(i + 1), _rhs->depth(i + 1));   }
 
     bool equal(SymExpr& a) {
         if (sym_equal(a)){
@@ -208,9 +215,14 @@ public:
             return lhs()->equal(b->lhs()) && rhs()->equal(b->rhs()) ;
         }
 
+        if (a->is_pattern()){
+            return pattern_equal(a);
+        }
+
         return false;
     }
 
+    bool pattern_equal(SymExpr& a) { return a->is_binary();   }
 
 protected:
     SymExpr _lhs;
@@ -272,6 +284,7 @@ public:
      }
 
     std::size_t size() const {  return _args.size();    }
+    int depth(int i = 0) {  return i + 1;   }
 
 protected:
     Args _args;

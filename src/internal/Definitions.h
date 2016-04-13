@@ -1,5 +1,5 @@
-#ifndef SYMDIF_DEFINITIONS_HEADER
-#define SYMDIF_DEFINITIONS_HEADER
+#ifndef SYMDIF_INTERNAL_DEFINITIONS_HEADER
+#define SYMDIF_INTERNAL_DEFINITIONS_HEADER
 /*
  *  Description:
  *    - Define basic mathematical functions and their derivatives
@@ -64,10 +64,10 @@ DEFINE_BINARY(Pow, "^", EST_Pow, OUTLINE_MAKE,
         SymExpr& power = _rhs;
         SymExpr& expr = _lhs;
 
-        SymExpr pp = power->derivate(name);
+        //SymExpr pp = power->derivate(name);
         SymExpr ep = expr->derivate(name);
 
-        return Mult::make(Mult::make(pp, ep), Pow::make(expr, Add::make(power, minus_one())));
+        return Mult::make(Mult::make(power, ep), Pow::make(expr, Add::make(power, minus_one())));
     }
 );
 

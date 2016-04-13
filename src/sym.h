@@ -4,6 +4,8 @@
 #include "internal/AbstractExpression.h"
 #include "internal/Utils.h"
 
+#include "internal/Pattern.h"
+
 namespace symdiff{
 
 // Public API
@@ -29,6 +31,12 @@ Sym two();
 Sym e();
 Sym pi();
 
+Sym leaf();
+Sym unary();
+Sym binary();
+Sym any();
+
+
 // Hollow class
 class Sym{
 public:
@@ -48,6 +56,20 @@ public:
 
     bool       equal(const Sym& a) const { return _v->equal(a._v);    }
     bool operator== (const Sym& b) const { return this->equal(b);     }
+    int depth() const { return _v->depth(); }
+
+    // Implement it in ABSExpression
+    std::pair<int, int> two_depth() const
+    {
+        if (_v->get_type() > internal::BINARY_SUBTYPE &&
+            _v->get_type() < internal::UNARY_SUBTYPE){
+
+            internal::BinaryOperator* b = dynamic_cast<internal::BinaryOperator*>(_v.get());
+            return std::pair<int, int>(b->lhs()->depth(), b->rhs()->depth());
+        }
+
+        return std::pair<int, int>(0, 0);
+    }
 
     std::ostream& gen(std::ostream& out, OutputType t) {    return _v->gen(out, t);      }
     std::ostream& print(std::ostream& out) {    return _v->print(out);      }
@@ -60,6 +82,8 @@ public:
     Sym substitute(Context& c)   {  return _v->substitute(c);   }
     Sym eval(Context c)          {  return _v->partial_eval(c); }
     Sym reduce()      {  Context c; return _v->partial_eval(c); }
+
+    bool pattern_equal(Sym a) { return _v->pattern_equal(a._v);    }
 
     // Implicit cast to SymExpr
     // needed because Context use SymExpr i.e make_val must be converted to SymExpr
@@ -107,6 +131,11 @@ private:
     friend Sym two();
     friend Sym e();
     friend Sym pi();
+
+    friend Sym leaf();
+    friend Sym unary();
+    friend Sym binary();
+    friend Sym any();
 };
 
 // implicit => make_local

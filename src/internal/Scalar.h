@@ -1,5 +1,5 @@
-#ifndef SYMDIF_SCALAR_HEADER
-#define SYMDIF_SCALAR_HEADER
+#ifndef SYMDIF_INTERNAL_SCALAR_HEADER
+#define SYMDIF_INTERNAL_SCALAR_HEADER
 /*
  *  Description:
  *    - Define a Constant Value
@@ -55,6 +55,7 @@ public:
     virtual bool is_scalar() {  return true;   }
     virtual bool is_leaf()   {  return true;   }
     virtual bool parens()    {  return false;   }
+            int  depth(int i = 0) {  return i + 1;   }
 
     // Transformations
     SymExpr derivate(const std::string& name){  return zero(); }
@@ -79,10 +80,15 @@ public:
             return p->value() == this->value();
         }
 
+        if (a->is_pattern())
+            return pattern_equal(a);
+
         return false;
     }
 
     bool equal(SymExpr& a) {   return sym_equal(a);     }
+
+    bool pattern_equal(SymExpr& a) { return a->is_leaf();   }
 
     std::string to_string(){ return internal::to_string(get_type()) + ": " + std::to_string(value()); }
 

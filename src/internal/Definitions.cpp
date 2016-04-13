@@ -8,6 +8,10 @@ namespace internal{
 SymExpr Add::make(SymExpr lhs, SymExpr rhs){
     reorder(lhs, rhs);
 
+    // desactive simplification for patterns
+    if (lhs->is_pattern() || rhs->is_pattern())
+        return Expression::make<Add>(lhs, rhs);
+
     // Simplify here
     if (lhs->is_nul())  return rhs;
     if (rhs->is_nul())  return lhs;
@@ -16,6 +20,19 @@ SymExpr Add::make(SymExpr lhs, SymExpr rhs){
     // which flatten chained addition and collapse them later
     // A Flatten node can be useful for mult too!
     // we could simplify : (x + 2) + 3 easily
+
+    // AddFlatten could greatly reduce graph depth
+    // This could also create more balanced tree
+
+    // Worst Unbalanced tree : (a + (b + (c + (d + (e + (f + g) : Depth = 6
+    // Best Case             : ((a + b) + c) + (d + (f + g))    : Depth = 3
+
+    // AddFlatten            : (a + b + c + d + f + g)          : Depth = 1
+    // In that case we will have to do 6 add operation as in the worst case
+    // but we do not have to carry a graph representation
+    // so it should be faster.
+    // + now we have each term in a Vector, even if the speed gain is
+    // null. It will be easier to transform the graph with a vector
 
     //      Add Collapse
     // -----------------------
@@ -52,6 +69,10 @@ SymExpr Add::make(SymExpr lhs, SymExpr rhs){
 
 SymExpr Mult::make(SymExpr lhs, SymExpr rhs){
     reorder(lhs, rhs);
+
+    // desactive simplification for patterns
+    if (lhs->is_pattern() || rhs->is_pattern())
+        return Expression::make<Mult>(lhs, rhs);
 
     // Simplify here
     if (lhs->is_nul() || rhs->is_nul())
@@ -93,6 +114,11 @@ SymExpr Mult::make(SymExpr lhs, SymExpr rhs){
 }
 
 SymExpr Pow::make(SymExpr expr, SymExpr power){
+
+    // desactive simplification for patterns
+    if (expr->is_pattern() || power->is_pattern())
+        return Expression::make<Pow>(expr, power);
+
     // Simplify here
     if (expr->is_nul())
         return zero();
@@ -114,6 +140,10 @@ SymExpr Pow::make(SymExpr expr, SymExpr power){
 
 
 SymExpr Opposite::make(SymExpr expr){
+    // desactive simplification for patterns
+    if (expr->is_pattern())
+        return Expression::make<Opposite>(expr);
+
     // Simplify Here
     if (expr->is_nul())
         return zero();
@@ -127,6 +157,10 @@ SymExpr Opposite::make(SymExpr expr){
 }
 
 SymExpr Inverse::make(SymExpr expr){
+    // desactive simplification for patterns
+    if (expr->is_pattern())
+        return Expression::make<Inverse>(expr);
+
     // Simplify Here
     if (expr->is_one())
         return one();
@@ -140,6 +174,10 @@ SymExpr Inverse::make(SymExpr expr){
 }
 
 SymExpr Exp::make(SymExpr expr){
+    // desactive simplification for patterns
+    if (expr->is_pattern())
+        return Expression::make<Exp>(expr);
+
     // Simplify Here
     if (expr->is_one())
         return e();
@@ -156,6 +194,10 @@ SymExpr Exp::make(SymExpr expr){
 }
 
 SymExpr Ln::make(SymExpr expr){
+    // desactive simplification for patterns
+    if (expr->is_pattern())
+        return Expression::make<Ln>(expr);
+
     // Simplify Here
     if (expr->is_one())
         return zero();

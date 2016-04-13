@@ -1,7 +1,8 @@
-#ifndef SYMDIF_EXPR_HEADER
-#define SYMDIF_EXPR_HEADER
+#ifndef SYMDIF_INTERNAL_EXPR_HEADER
+#define SYMDIF_INTERNAL_EXPR_HEADER
 
 #include "Context.h"
+#include <iostream>
 
 // TODO
 // return a set of Placeholder variable inside a given expression
@@ -48,7 +49,13 @@ enum ExprSubType
     // For printing sake Inv must be last
     // (/ a) b => b (/ a)
     EST_Inv,
+
+    PATTERN_SUBTYPE = 400,
 };
+
+#define IS_BINARY(type) (type > internal::BINARY_SUBTYPE) && (type < internal::UNARY_SUBTYPE)
+#define IS_UNARY(type) (type > internal::UNARY_SUBTYPE)
+#define IS_LEAF(type) (type < internal::BINARY_SUBTYPE)
 
 std::string to_string(ExprSubType t);
 
@@ -98,19 +105,13 @@ public:
     virtual bool is_scalar() {  return false;   }
     virtual bool is_leaf()   {  return false;   }
     virtual bool is_binary() {  return false;   }
+    virtual bool is_pattern(){  return false;   }
     virtual bool parens()    {  return false;   }   // For pretty printing
 
-    // sym_equal test only if a node b is of the same 'type'
-    // Binary/Unary EST_Type == EST_type
-    // Placeholder  _name == _name
-    // Scalar       _value == _value
-    virtual bool sym_equal(SymExpr& ) { return false;   }
-
-    // Similar to sym equal but allow for special Pattern Node
-    virtual bool pattern_equal(SymExpr& ) {}
+    // return max Tree depth
+    virtual int depth(int i = 0) = 0;
 
     // basic graph transformation
-
     virtual double full_eval(Context& c)  = 0;
     virtual SymExpr partial_eval(Context& c) = 0;
 
@@ -128,6 +129,15 @@ public:
     virtual ExprSubType get_type() const = 0;
     virtual std::string to_string(){ return internal::to_string(this->get_type()); }
 
+    /* Graph utilities */
+    // sym_equal test only if a node b is of the same 'type'
+    // Binary/Unary EST_Type == EST_type
+    // Placeholder  _name == _name
+    // Scalar       _value == _value
+    virtual bool sym_equal(SymExpr& ) { return false;   }
+
+    // Similar to sym equal but allow for special Pattern Node
+    virtual bool pattern_equal(SymExpr& a) { return sym_equal(a);   }
     virtual bool equal(SymExpr& a) = 0;
 
 private:

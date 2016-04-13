@@ -4,11 +4,6 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.1)
 # project name + language used
 PROJECT(symdiff CXX)
 
-
-
-
-SET(CMAKE_BUILD_TYPE "Debug")
-
 IF(${CMAKE_BUILD_TYPE} MATCHES "Debug")
     MESSAGE(STATUS "Building Debug Version")
 ELSE()
@@ -20,15 +15,16 @@ SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
-
 # add cmake FindXXX script to find pre-compiled libraries if any
 LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
+SET(${CXX_STANDARD_REQUIRED} ON)
 
 # Project's Options
 # ====================================
 
 OPTION(BUILD_TESTING        "Enable tests"       ON)
+OPTION(BUILD_EXAMPLES       "Build examples"    ON)
 #OPTION(BUILD_BENCHMARK      "Build Benchmarks"   ON)
 #OPTION(BUILD_DOCUMENTATION  "Build docs"         OFF)
 #OPTION(BUILD_DOXYGEN        "Build Doxygen docs" ON)
@@ -56,3 +52,8 @@ IF(BUILD_TESTING)
     MESSAGE(STATUS "Building tests")
     ADD_SUBDIRECTORY(tests)
 ENDIF(BUILD_TESTING)
+
+IF(BUILD_EXAMPLES)
+    MESSAGE(STATUS "Building examples")
+    ADD_SUBDIRECTORY(examples)
+ENDIF(BUILD_EXAMPLES)

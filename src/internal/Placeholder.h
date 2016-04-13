@@ -1,5 +1,5 @@
-#ifndef SYMDIF_PLACEHOLDER_HEADER
-#define SYMDIF_PLACEHOLDER_HEADER
+#ifndef SYMDIF_INTERNAL_PLACEHOLDER_HEADER
+#define SYMDIF_INTERNAL_PLACEHOLDER_HEADER
 /*
  *  Description:
  *    - Define an unkown variable that can be replace by any expression
@@ -46,7 +46,8 @@ public:
     std::ostream& print(std::ostream& out)  {   return out << _name;    }
     ExprSubType get_type() const            {   return EST_Placeholder; }
     bool is_leaf()                          {   return true;            }
-    virtual bool parens()                   {   return true;            }
+    bool parens()        {   return true;            }
+    int depth(int i = 0) {  return i + 1;   }
 
     SymExpr apply(Context& c){
         if (c.find(_name) != c.end())
@@ -80,8 +81,13 @@ public:
             return p->name() == this->name();
         }
 
+        if (a->is_pattern())
+            return pattern_equal(a);
+
         return false;
     }
+
+    bool pattern_equal(SymExpr& a) { return a->is_leaf();   }
 
     std::string to_string(){ return internal::to_string(get_type()) + ": " + name(); }
 
