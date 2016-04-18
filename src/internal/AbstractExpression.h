@@ -109,7 +109,7 @@ public:
     virtual bool parens()    {  return false;   }   // For pretty printing
 
     // return max Tree depth
-    virtual int depth(int i = 0) = 0;
+    virtual int height(int i = 0) = 0;
 
     // basic graph transformation
     virtual double full_eval(Context& c)  = 0;

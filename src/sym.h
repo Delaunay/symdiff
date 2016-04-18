@@ -56,7 +56,7 @@ public:
 
     bool       equal(const Sym& a) const { return _v->equal(a._v);    }
     bool operator== (const Sym& b) const { return this->equal(b);     }
-    int depth() const { return _v->depth(); }
+    int height() const { return _v->height(); }
 
     // Implement it in ABSExpression
     std::pair<int, int> two_depth() const
@@ -65,7 +65,7 @@ public:
             _v->get_type() < internal::UNARY_SUBTYPE){
 
             internal::BinaryOperator* b = dynamic_cast<internal::BinaryOperator*>(_v.get());
-            return std::pair<int, int>(b->lhs()->depth(), b->rhs()->depth());
+            return std::pair<int, int>(b->lhs()->height(), b->rhs()->height());
         }
 
         return std::pair<int, int>(0, 0);

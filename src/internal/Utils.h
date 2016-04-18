@@ -74,7 +74,7 @@ public:
 
     double full_eval(Context& c)    {   return function()(_expr->full_eval(c)); }
     double full_eval(PtrContext& c) {   return function()(_expr->full_eval(c)); }
-    int depth(int i = 0) {  return  _expr->depth(i + 1);   }
+    int height(int i = 0) {  return  _expr->height(i + 1);   }
 
     // I think this could be done using template code
     // Must check if std::mem_fun can be used
@@ -207,7 +207,8 @@ public:
 
     SymExpr& lhs() { return _lhs;    }
     SymExpr& rhs() { return _rhs;    }
-    int depth(int i = 0) {  return std::max(_lhs->depth(i + 1), _rhs->depth(i + 1));   }
+    int height(int i = 0) {
+        return std::max(_lhs->height(i + 1), _rhs->height(i + 1));   }
 
     bool equal(SymExpr& a) {
         if (sym_equal(a)){
@@ -284,7 +285,7 @@ public:
      }
 
     std::size_t size() const {  return _args.size();    }
-    int depth(int i = 0) {  return i + 1;   }
+    int height(int i = 0) {  return i + 1;   }
 
 protected:
     Args _args;

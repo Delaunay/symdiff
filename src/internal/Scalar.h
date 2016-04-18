@@ -55,7 +55,7 @@ public:
     virtual bool is_scalar() {  return true;   }
     virtual bool is_leaf()   {  return true;   }
     virtual bool parens()    {  return false;   }
-            int  depth(int i = 0) {  return i + 1;   }
+            int  height(int i = 0) {  return i;   }
 
     // Transformations
     SymExpr derivate(const std::string& name){  return zero(); }

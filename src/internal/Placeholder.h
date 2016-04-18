@@ -47,7 +47,7 @@ public:
     ExprSubType get_type() const            {   return EST_Placeholder; }
     bool is_leaf()                          {   return true;            }
     bool parens()        {   return true;            }
-    int depth(int i = 0) {  return i + 1;   }
+    int height(int i = 0) {  return i;   }
 
     SymExpr apply(Context& c){
         if (c.find(_name) != c.end())

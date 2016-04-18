@@ -31,7 +31,7 @@ public:
     double full_eval(PtrContext& c)  final          {   throw EvalError("Patterns can not be evaluated"); }
     SymExpr partial_eval(PtrContext& c) final       {   throw EvalError("Patterns can not be evaluated"); }
     SymExpr derivate(const std::string& name) final {   throw EvalError("Patterns can not be evaluated"); }
-    int depth(int i = 0) {  return i;   }
+    int height(int i = 0) {  return i;   }
 
     std::ostream& gen(std::ostream& out, OutputType t) final { return this->print(out); }
 
