@@ -24,7 +24,7 @@ SET(${CXX_STANDARD_REQUIRED} ON)
 # ====================================
 
 OPTION(BUILD_TESTING        "Enable tests"       ON)
-OPTION(USE_LLVM_IR          "Enable LLVM-IR"     ON)
+OPTION(USE_LLVM_IR          "Enable LLVM-IR"     OFF)
 OPTION(BUILD_EXAMPLES       "Build examples"     OFF)
 OPTION(BUILD_BENCHMARK      "Build Benchmarks"   OFF)
 OPTION(BUILD_DOCUMENTATION  "Build docs"         OFF)
@@ -35,25 +35,28 @@ OPTION(BUILD_SPHINX         "Build Sphinx docs"  OFF)
 # ====================================
 
 FIND_PACKAGE(Git REQUIRED)
-FIND_PACKAGE(LLVM)
 
-IF(${LLVM_FOUND})
-    MESSAGE(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
-    MESSAGE(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
+IF(${USE_LLVM_IR})
+    FIND_PACKAGE(LLVM)
 
-    # I think cmake llvm utils 'bug' (seek usr/lib/llvm instead of usr/lib/llvm-3.8)
-    INCLUDE_DIRECTORIES("/usr/lib/llvm-3.8/include/")
-    ADD_DEFINITIONS(${LLVM_DEFINITIONS})
+    IF(${LLVM_FOUND})
+        MESSAGE(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
+        MESSAGE(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
 
-        #ExecutionEngine
-        #Interpreter
-        #MC
+        # I think cmake llvm utils 'bug' (seek usr/lib/llvm instead of usr/lib/llvm-3.8)
+        INCLUDE_DIRECTORIES("/usr/lib/llvm-3.8/include/")
+        ADD_DEFINITIONS(${LLVM_DEFINITIONS})
 
-    llvm_map_components_to_libnames(LLVM_LIBS
-        Support
-        Core
-        nativecodegen)
+            #ExecutionEngine
+            #Interpreter
+            #MC
 
+        llvm_map_components_to_libnames(LLVM_LIBS
+            Support
+            Core
+            nativecodegen)
+
+    ENDIF()
 ENDIF()
 
 # Configuration

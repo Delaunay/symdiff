@@ -1,6 +1,8 @@
 Symdiff
 =======
 
+[![Build Status](https://travis-ci.org/Delaunay/symdiff.svg?branch=master)](https://travis-ci.org/Delaunay/symdiff)
+
 Symbolic differentiation in C++, Python and C. All of them are standalone implementations.
 This is not intended to be an efficient Symbolic library but rather a
 relatively simple example of how it could be implemented.
@@ -79,19 +81,19 @@ Might work with MinGW 492 (32b)
 
 	int main ()
 	{
-	    SymExpr x = sym_placeholder("x");                           
-	    SymExpr expr = sym_mult(x, x);                            
-	
+	    SymExpr x = sym_placeholder("x");
+	    SymExpr expr = sym_mult(x, x);
+
 	    sym_print(expr);	 printf("\n");
-	
-	    SymExpr df = sym_deriv("x", expr);      
-	                    
+
+	    SymExpr df = sym_deriv("x", expr);
+
 	    sym_print(df);	 	 printf("\n");
-	
+
 	    sym_free(df);
 	    sym_free(expr);
 	    sym_free(x);
-	
+
 	    return 0;
 	}
 
@@ -138,12 +140,12 @@ Those are almost done I need just a little modification to current code
 * Check if Graph can be 'easily' balanced
 * Check if we can use threads to compute two different branches
 * Check shared_ptr and thread
-    
+
 		Thread share pointers put they cannot deallocate those.
 	    Only temporary pointers will be deallocated.
-	
+
 	     level 1 - Threading
-	
+
 	     Thread 1 | Thread 2
 	              *                 level 0 - 1 Possible Thread
 	           /  |  \
@@ -152,12 +154,12 @@ Those are almost done I need just a little modification to current code
 	       /   \  |  /   \
 	      a     b | c     d         level 2 - 4 Possible Thread
 	              |
-	
+
 	    We cannot spawn thread at each nodes there are too many of them.
 	    but we could spam per level.
-	
+
 	    Seek the level best fitting our threading capability.
-	
+
 	    NB: Number of possible thread per level is not necessarily even. (Unary Nodes)
 
 

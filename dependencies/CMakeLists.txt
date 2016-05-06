@@ -3,7 +3,11 @@
 #
 IF(BUILD_TESTING)
 
-    # compile gtest
     ADD_SUBDIRECTORY(gtest)
+    #FIND_PACKAGE(gtest)
+
+    #IF(NOT ${GTEST_FOUND})
+        # compile gtest
+    #ENDIF()
 
 ENDIF(BUILD_TESTING)

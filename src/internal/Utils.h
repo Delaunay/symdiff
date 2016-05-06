@@ -300,10 +300,9 @@ protected:
 
 
 
-#ifdef USE_LLVM_IR
+#if USE_LLVM_IR
 #   define LLVM_IR_GEN(X) virtual llvm::Value* llvm_gen(llvm::IRBuilder<>& bl){ X }
-
-    #define LLVM_MAKE_DOUBLE(x)  llvm::ConstantFP::get(bl.getDoubleTy(), x)
+#   define LLVM_MAKE_DOUBLE(x)  llvm::ConstantFP::get(bl.getDoubleTy(), x)
 #else
 #   define LLVM_IR_GEN(X)
 #endif

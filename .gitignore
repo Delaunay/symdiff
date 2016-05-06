@@ -28,4 +28,3 @@ Makefile*
 /build*/
 /old/
 */.idea/*
-/dependencies/*/

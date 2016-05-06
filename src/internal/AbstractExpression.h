@@ -6,7 +6,7 @@
 #include "Context.h"
 #include <iostream>
 
-#ifdef USE_LLVM_IR
+#if USE_LLVM_IR
 #   include "llvm/IR/IRBuilder.h"
 #endif
 

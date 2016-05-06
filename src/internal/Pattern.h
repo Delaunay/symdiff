@@ -23,8 +23,6 @@ namespace internal {
 class Pattern: public Expression
 {
 public:
-
-
     // basic graph transformation
     double full_eval(Context& c) final              {   throw EvalError("Patterns can not be evaluated"); }
     SymExpr partial_eval(Context& c) final          {   throw EvalError("Patterns can not be evaluated"); }

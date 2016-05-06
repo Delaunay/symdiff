@@ -6,7 +6,7 @@
 
 #include "internal/Pattern.h"
 
-#ifdef USE_LLVM_IR
+#if USE_LLVM_IR
 #   include "llvm/IR/LLVMContext.h"
 #   include "llvm/IR/Module.h"
 #endif
@@ -102,7 +102,7 @@ public:
         _v(make_val(v))
     {}
 
-#ifdef USE_LLVM_IR
+#if USE_LLVM_IR
     // Utils to generate LLVM-IR
     // This Generate a Function
     // The function is added to llvm::Module

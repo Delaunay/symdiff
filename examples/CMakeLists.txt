@@ -4,7 +4,7 @@ ADD_EXECUTABLE(example1 example1.cpp)
 TARGET_LINK_LIBRARIES(example1 ${LLVM_LIBS} symdiff)
 SET_PROPERTY(TARGET example1 PROPERTY CXX_STANDARD 11)
 
-IF(${LLVM_FOUND})
+IF(${USE_LLVM_IR})
     llvm_map_components_to_libnames(EX2_LLVM_LIBS
         Support
         Core
