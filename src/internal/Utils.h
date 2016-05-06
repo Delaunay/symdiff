@@ -298,6 +298,16 @@ protected:
 #define DEFAULT_BINARY_MAKE(Type) { return Expression::make<Type>(lhs, rhs); }
 #define OUTLINE_MAKE ;
 
+
+
+#ifdef USE_LLVM_IR
+#   define LLVM_IR_GEN(X) virtual llvm::Value* llvm_gen(llvm::IRBuilder<>& bl){ X }
+
+    #define LLVM_MAKE_DOUBLE(x)  llvm::ConstantFP::get(bl.getDoubleTy(), x)
+#else
+#   define LLVM_IR_GEN(X)
+#endif
+
 // Simplify if Scalar
 // This can lead to approximative results
 #define BINARY_SCALAR_EVAL(lhs, rhs, Node, fun) \
@@ -318,7 +328,7 @@ protected:
 
 #define EAGER_EVAL(x) x
 
-#define DEFINE_UNARY(Name, repr_name, ExprSubTypeID, make_fun, fun, derivative)\
+#define DEFINE_UNARY(Name, repr_name, ExprSubTypeID, make_fun, fun, derivative, llvm_gen)\
     class Name: public UnaryOperator{\
     public:\
         Name(SymExpr expr):\
@@ -355,9 +365,12 @@ protected:
         }\
     \
         ExprSubType get_type() const  { return ExprSubTypeID; }\
+    \
+        LLVM_IR_GEN(llvm_gen)\
     }
 
-#define DEFINE_BINARY(Name, repr_name, ExprSubTypeID, make_fun, fun, derivative)\
+
+#define DEFINE_BINARY(Name, repr_name, ExprSubTypeID, make_fun, fun, derivative, llvm_gen)\
     class Name: public BinaryOperator{\
     public:\
         Name(SymExpr lhs, SymExpr rhs):\
@@ -394,6 +407,8 @@ protected:
         }\
     \
         ExprSubType get_type() const  { return ExprSubTypeID; }\
+    \
+        LLVM_IR_GEN(llvm_gen)\
     }
 
 }

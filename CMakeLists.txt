@@ -24,17 +24,43 @@ SET(${CXX_STANDARD_REQUIRED} ON)
 # ====================================
 
 OPTION(BUILD_TESTING        "Enable tests"       ON)
-OPTION(BUILD_EXAMPLES       "Build examples"    ON)
-#OPTION(BUILD_BENCHMARK      "Build Benchmarks"   ON)
-#OPTION(BUILD_DOCUMENTATION  "Build docs"         OFF)
-#OPTION(BUILD_DOXYGEN        "Build Doxygen docs" ON)
-#OPTION(BUILD_SPHINX         "Build Sphinx docs"  ON)
+OPTION(USE_LLVM_IR          "Enable LLVM-IR"     ON)
+OPTION(BUILD_EXAMPLES       "Build examples"     OFF)
+OPTION(BUILD_BENCHMARK      "Build Benchmarks"   OFF)
+OPTION(BUILD_DOCUMENTATION  "Build docs"         OFF)
+OPTION(BUILD_DOXYGEN        "Build Doxygen docs" OFF)
+OPTION(BUILD_SPHINX         "Build Sphinx docs"  OFF)
 
 # Binary/pre-compiled Dependencies
 # ====================================
 
-# FIND_PACKAGE(...)
+FIND_PACKAGE(Git REQUIRED)
+FIND_PACKAGE(LLVM)
 
+IF(${LLVM_FOUND})
+    MESSAGE(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
+    MESSAGE(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
+
+    # I think cmake llvm utils 'bug' (seek usr/lib/llvm instead of usr/lib/llvm-3.8)
+    INCLUDE_DIRECTORIES("/usr/lib/llvm-3.8/include/")
+    ADD_DEFINITIONS(${LLVM_DEFINITIONS})
+
+        #ExecutionEngine
+        #Interpreter
+        #MC
+
+    llvm_map_components_to_libnames(LLVM_LIBS
+        Support
+        Core
+        nativecodegen)
+
+ENDIF()
+
+# Configuration
+
+# Find revision ID and hash of the sourcetree
+INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR})
+INCLUDE(cmake/genrev.cmake)
 
 # Subdirectories
 # ====================================

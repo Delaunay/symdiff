@@ -1,8 +1,14 @@
 #ifndef SYMDIF_INTERNAL_EXPR_HEADER
 #define SYMDIF_INTERNAL_EXPR_HEADER
 
+#include "version.h"
+
 #include "Context.h"
 #include <iostream>
+
+#ifdef USE_LLVM_IR
+#   include "llvm/IR/IRBuilder.h"
+#endif
 
 // TODO
 // return a set of Placeholder variable inside a given expression
@@ -139,6 +145,10 @@ public:
     // Similar to sym equal but allow for special Pattern Node
     virtual bool pattern_equal(SymExpr& a) { return sym_equal(a);   }
     virtual bool equal(SymExpr& a) = 0;
+
+#ifdef USE_LLVM_IR
+    virtual llvm::Value* llvm_gen(llvm::IRBuilder<>& ){}
+#endif
 
 private:
 };

@@ -6,6 +6,11 @@
 
 #include "internal/Pattern.h"
 
+#ifdef USE_LLVM_IR
+#   include "llvm/IR/LLVMContext.h"
+#   include "llvm/IR/Module.h"
+#endif
+
 namespace symdiff{
 
 // Public API
@@ -96,6 +101,30 @@ public:
     Sym(double v):
         _v(make_val(v))
     {}
+
+#ifdef USE_LLVM_IR
+    // Utils to generate LLVM-IR
+    // This Generate a Function
+    // The function is added to llvm::Module
+    void llvm_gen(const std::string& name, llvm::Module* m, llvm::LLVMContext& ctx){
+        using namespace llvm;
+
+        // get Expression args to build a Function
+        // auto freev = _v->get_free_variables();
+
+        // Function with no arg return double
+        Function *fun =
+            cast<Function>(m->getOrInsertFunction(
+                name, Type::getDoubleTy(ctx), nullptr));
+
+        llvm::BasicBlock *body = llvm::BasicBlock::Create(ctx, "fun_body", fun);
+        llvm::IRBuilder<> bl(body);
+
+        // build bb
+        bl.CreateRet(_v->llvm_gen(bl));
+    }
+
+#endif
 
 private:
     // force everything public to be Sym

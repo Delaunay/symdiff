@@ -38,8 +38,7 @@ SET(TEST_SRC
 )
 
 ADD_EXECUTABLE(symdiff_test gtest_main.cpp ${TEST_SRC})
-TARGET_LINK_LIBRARIES(symdiff_test symdiff gtest -pthread)
-
+TARGET_LINK_LIBRARIES(symdiff_test ${LLVM_LIBS} symdiff gtest -pthread)
 SET_PROPERTY(TARGET symdiff_test PROPERTY CXX_STANDARD 11)
 
 

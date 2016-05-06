@@ -91,6 +91,15 @@ public:
 
     std::string to_string(){ return internal::to_string(get_type()) + ": " + name(); }
 
+#ifdef USE_LLVM_IR
+    // FIXME:
+    // if I generate a function I need to be able to access llvm function args
+    virtual llvm::Value* llvm_gen(llvm::IRBuilder<>& bl){
+        return llvm::ConstantFP::get(bl.getDoubleTy(), 0);
+    }
+#endif
+
+
 private:
     std::string _name;
 };

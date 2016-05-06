@@ -3,7 +3,7 @@
 #include <string.h>
 
 
-
+#define MMRY_DEBUG(X) X
 
 // Symdiff start here
 
@@ -78,6 +78,7 @@ shared_ptr from_ptr(__SymExpr ptr){
 shared_ptr shared_owned(shared_ptr p){
    *p.count = *p.count - 1;
     return p;
+    // I don't check if p == 0 on purpose
 }
 
 typedef shared_ptr SymExpr;
@@ -93,9 +94,10 @@ void shared_delete(shared_ptr p){
 
     *p.count = *p.count - 1;
 
-    //printf(" : %d : ", *p.count);
-    //sym_print(p);
-    //printf("\n");
+    MMRY_DEBUG(
+        printf(" : %d : ", *p.count);
+        sym_print(p);
+        printf("\n");)
 
     if (*p.count == 0){
         free(p.count);
@@ -122,7 +124,7 @@ void shared_delete(shared_ptr p){
 SYM_NODE(SymPlaceholder, const char* _name)
 SYM_NODE(SymScalar, double _value)
 
-SYM_NODE(SymAdd, SymExpr _lhs; SymExpr _rhs)
+SYM_NODE(SymAdd,  SymExpr _lhs; SymExpr _rhs)
 SYM_NODE(SymMult, SymExpr _lhs; SymExpr _rhs)
 
 SYM_NODE(SymInv, SymExpr _expr)
@@ -271,12 +273,13 @@ SymExpr sym_deriv(const char* name, SymExpr expr){
     }
 }
 
+MMRY_DEBUG(
 SymExpr nullptr(){
     static shared_ptr p;
     p.count = NULL;
     p.ptr = NULL;
     return p;
-}
+})
 
 void sym_free(SymExpr expr)
 {
@@ -285,8 +288,8 @@ void sym_free(SymExpr expr)
         case __RTTI_Add:
         case __RTTI_Mult:{
             DYN_CAST(x, SymBinary, expr)
-            sym_free(x->_rhs); x->_rhs = nullptr();
-            sym_free(x->_lhs); x->_lhs = nullptr();
+            sym_free(x->_rhs); MMRY_DEBUG(x->_rhs = nullptr();)
+            sym_free(x->_lhs); MMRY_DEBUG(x->_lhs = nullptr();)
             break;
         }
 
@@ -294,7 +297,7 @@ void sym_free(SymExpr expr)
         case __RTTI_Inv:
         case __RTTI_Neg:{
             DYN_CAST(x, SymUnary, expr)
-            sym_free(x->_expr); x->_expr = nullptr();
+            sym_free(x->_expr); MMRY_DEBUG(x->_expr = nullptr();)
             break;
         }
 
@@ -332,6 +335,7 @@ int main ()
     printf("%d \n", *x.count);
 
     // NB: even with a shared_ptr we need to explicitly call free
+    // This is C
     sym_free(df);
     sym_free(expr);
     sym_free(x);

@@ -8,6 +8,8 @@
 #include "AbstractExpression.h"
 #include <memory>
 
+#include "llvm/ADT/APFloat.h"
+
 namespace symdiff {
 namespace internal{
 
@@ -91,6 +93,13 @@ public:
     bool pattern_equal(SymExpr& a) { return a->is_leaf();   }
 
     std::string to_string(){ return internal::to_string(get_type()) + ": " + std::to_string(value()); }
+
+#ifdef USE_LLVM_IR
+    virtual llvm::Value* llvm_gen(llvm::IRBuilder<>& bl){
+        //return llvm::ConstantFP::get(bl.getContext(), llvm::APFloat(_value));
+        return llvm::ConstantFP::get(bl.getDoubleTy(), _value);
+    }
+#endif
 
 private:
     T _value;

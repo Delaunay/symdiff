@@ -16,6 +16,11 @@
 namespace symdiff{
 namespace internal{
 
+//builder.CreateFDiv()
+//builder.CreateFSub()
+// builder.CreateFNeg()
+
+
 DEFINE_BINARY(Add, "+", EST_Add, OUTLINE_MAKE,
     // Function to apply
     [](double a, double b){ return a + b; },
@@ -25,7 +30,8 @@ DEFINE_BINARY(Add, "+", EST_Add, OUTLINE_MAKE,
         SymExpr rhs = _rhs->derivate(name);
         SymExpr lhs = _lhs->derivate(name);
         return Add::make(rhs, lhs);
-    }
+    },
+    return bl.CreateAdd(_rhs->llvm_gen(bl), _lhs->llvm_gen(bl));
 );
 
 DEFINE_UNARY(Opposite, "-", EST_Neg, OUTLINE_MAKE,
@@ -35,7 +41,10 @@ DEFINE_UNARY(Opposite, "-", EST_Neg, OUTLINE_MAKE,
     // Derivative
     {
         return Opposite::make(_expr->derivate(name));
-    }
+    },
+    // Not sure if builder.CreateFNeg() is equivalent
+    // return bl.CreateFSub(LLVM_MAKE_DOUBLE(0), _expr->llvm_gen(bl));
+    return bl.CreateMul(LLVM_MAKE_DOUBLE(-1), _expr->llvm_gen(bl));
 );
 
 DEFINE_BINARY(Mult, "*", EST_Mult, OUTLINE_MAKE,
@@ -51,7 +60,9 @@ DEFINE_BINARY(Mult, "*", EST_Mult, OUTLINE_MAKE,
         auto sec = Mult::make(_rhs, lhs);
 
         return Add::make(first, sec);
-    }
+    },
+
+    return bl.CreateMul(_rhs->llvm_gen(bl), _lhs->llvm_gen(bl));
 );
 
 DEFINE_BINARY(Pow, "^", EST_Pow, OUTLINE_MAKE,
@@ -68,7 +79,9 @@ DEFINE_BINARY(Pow, "^", EST_Pow, OUTLINE_MAKE,
         SymExpr ep = expr->derivate(name);
 
         return Mult::make(Mult::make(power, ep), Pow::make(expr, Add::make(power, minus_one())));
-    }
+    },
+    //
+    return LLVM_MAKE_DOUBLE(0);
 );
 
 
@@ -82,8 +95,11 @@ DEFINE_UNARY(Inverse, "/", EST_Inv, OUTLINE_MAKE,
         auto down = Inverse::make(Mult::make(_expr, _expr));
 
         return Opposite::make(Mult::make(up, down));
-    }
+    },
+
+    return bl.CreateFDiv(LLVM_MAKE_DOUBLE(1), _expr->llvm_gen(bl));
 );
+
 
 DEFINE_UNARY(Exp, "exp", EST_Exp,  OUTLINE_MAKE,
     // Function to apply
@@ -93,7 +109,8 @@ DEFINE_UNARY(Exp, "exp", EST_Exp,  OUTLINE_MAKE,
     {
         auto dx = _expr->derivate(name);
         return Mult::make(dx, Exp::make(_expr));
-    }
+    },
+    return LLVM_MAKE_DOUBLE(0);
 );
 
 DEFINE_UNARY(Ln, "ln", EST_Ln, OUTLINE_MAKE,
@@ -103,7 +120,8 @@ DEFINE_UNARY(Ln, "ln", EST_Ln, OUTLINE_MAKE,
     // Derivative
     {
         return Inverse::make(_expr);
-    }
+    },
+    return LLVM_MAKE_DOUBLE(0);
 );
 
 }
