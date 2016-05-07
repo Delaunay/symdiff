@@ -94,11 +94,21 @@ public:
 #ifdef USE_LLVM_IR
     // FIXME:
     // if I generate a function I need to be able to access llvm function args
-    virtual llvm::Value* llvm_gen(llvm::IRBuilder<>& bl){
-        return llvm::ConstantFP::get(bl.getDoubleTy(), 0);
+    virtual llvm::Value* llvm_gen(llvm::IRBuilder<>& bl, ArgIterator iarg, int& i){
+        i += 1; // tell parent to lookup next arg
+        return &(*iarg);
     }
 #endif
 
+    void free_variables(std::vector<string_view>& vector){
+        // functions usually have small number of arguments (2-3)
+        // so we don't bother to make a more efficient uniqueness check
+        for(auto& i: vector)
+            if (_name == i)
+                return;
+
+        vector.push_back(_name);
+    }
 
 private:
     std::string _name;

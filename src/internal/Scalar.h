@@ -8,7 +8,7 @@
 #include "AbstractExpression.h"
 #include <memory>
 
-#if USE_LLVM_IR
+#ifdef USE_LLVM_IR
 #   include "llvm/ADT/APFloat.h"
 #endif
 
@@ -96,8 +96,8 @@ public:
 
     std::string to_string(){ return internal::to_string(get_type()) + ": " + std::to_string(value()); }
 
-#if USE_LLVM_IR
-    virtual llvm::Value* llvm_gen(llvm::IRBuilder<>& bl){
+#ifdef USE_LLVM_IR
+    virtual llvm::Value* llvm_gen(llvm::IRBuilder<>& bl, ArgIterator, int&){
         //return llvm::ConstantFP::get(bl.getContext(), llvm::APFloat(_value));
         return llvm::ConstantFP::get(bl.getDoubleTy(), _value);
     }

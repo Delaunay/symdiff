@@ -31,7 +31,16 @@ DEFINE_BINARY(Add, "+", EST_Add, OUTLINE_MAKE,
         SymExpr lhs = _lhs->derivate(name);
         return Add::make(rhs, lhs);
     },
-    return bl.CreateAdd(_rhs->llvm_gen(bl), _lhs->llvm_gen(bl));
+
+    auto j = i;
+    auto lhs = _lhs->llvm_gen(bl, iarg, i);
+
+    if (j != i)
+        iarg = ++iarg;
+
+    auto rhs =  _rhs->llvm_gen(bl, iarg, i);
+
+    return bl.CreateFAdd(lhs, rhs);
 );
 
 DEFINE_UNARY(Opposite, "-", EST_Neg, OUTLINE_MAKE,
@@ -44,7 +53,7 @@ DEFINE_UNARY(Opposite, "-", EST_Neg, OUTLINE_MAKE,
     },
     // Not sure if builder.CreateFNeg() is equivalent
     // return bl.CreateFSub(LLVM_MAKE_DOUBLE(0), _expr->llvm_gen(bl));
-    return bl.CreateMul(LLVM_MAKE_DOUBLE(-1), _expr->llvm_gen(bl));
+    return bl.CreateFMul(LLVM_MAKE_DOUBLE(-1), _expr->llvm_gen(bl, iarg, i));
 );
 
 DEFINE_BINARY(Mult, "*", EST_Mult, OUTLINE_MAKE,
@@ -62,7 +71,15 @@ DEFINE_BINARY(Mult, "*", EST_Mult, OUTLINE_MAKE,
         return Add::make(first, sec);
     },
 
-    return bl.CreateMul(_rhs->llvm_gen(bl), _lhs->llvm_gen(bl));
+    auto j = i;
+    auto lhs = _lhs->llvm_gen(bl, iarg, i);
+
+    if (j != i)
+        iarg = ++iarg;
+
+    auto rhs =  _rhs->llvm_gen(bl, iarg, i);
+
+    return bl.CreateFMul(lhs, rhs);
 );
 
 DEFINE_BINARY(Pow, "^", EST_Pow, OUTLINE_MAKE,
@@ -97,7 +114,7 @@ DEFINE_UNARY(Inverse, "/", EST_Inv, OUTLINE_MAKE,
         return Opposite::make(Mult::make(up, down));
     },
 
-    return bl.CreateFDiv(LLVM_MAKE_DOUBLE(1), _expr->llvm_gen(bl));
+    return bl.CreateFDiv(LLVM_MAKE_DOUBLE(1), _expr->llvm_gen(bl, iarg, i));
 );
 
 

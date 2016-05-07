@@ -300,8 +300,12 @@ protected:
 
 
 
-#if USE_LLVM_IR
-#   define LLVM_IR_GEN(X) virtual llvm::Value* llvm_gen(llvm::IRBuilder<>& bl){ X }
+#ifdef USE_LLVM_IR
+#   define LLVM_IR_GEN(X)\
+        virtual llvm::Value* llvm_gen(llvm::IRBuilder<>& bl, ArgIterator iarg, int& i){\
+            X \
+        }\
+
 #   define LLVM_MAKE_DOUBLE(x)  llvm::ConstantFP::get(bl.getDoubleTy(), x)
 #else
 #   define LLVM_IR_GEN(X)
@@ -366,6 +370,10 @@ protected:
         ExprSubType get_type() const  { return ExprSubTypeID; }\
     \
         LLVM_IR_GEN(llvm_gen)\
+    \
+        void free_variables(std::vector<string_view>& vector){\
+            return _expr->free_variables(vector);\
+        }\
     }
 
 
@@ -408,6 +416,11 @@ protected:
         ExprSubType get_type() const  { return ExprSubTypeID; }\
     \
         LLVM_IR_GEN(llvm_gen)\
+    \
+        void free_variables(std::vector<string_view>& vector){\
+                   _lhs->free_variables(vector);\
+            return _rhs->free_variables(vector);\
+        }\
     }
 
 }

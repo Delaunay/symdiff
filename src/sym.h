@@ -6,7 +6,9 @@
 
 #include "internal/Pattern.h"
 
-#if USE_LLVM_IR
+#include <iostream>
+
+#ifdef USE_LLVM_IR
 #   include "llvm/IR/LLVMContext.h"
 #   include "llvm/IR/Module.h"
 #endif
@@ -102,7 +104,13 @@ public:
         _v(make_val(v))
     {}
 
-#if USE_LLVM_IR
+    std::vector<string_view> free_variables(){
+        std::vector<string_view> v;
+        _v->free_variables(v);
+        return v;
+    }
+
+#ifdef USE_LLVM_IR
     // Utils to generate LLVM-IR
     // This Generate a Function
     // The function is added to llvm::Module
@@ -110,20 +118,25 @@ public:
         using namespace llvm;
 
         // get Expression args to build a Function
-        // auto freev = _v->get_free_variables();
+        std::vector<string_view> freev = free_variables();
 
-        // Function with no arg return double
+        // Function return double
         Function *fun =
             cast<Function>(m->getOrInsertFunction(
                 name, Type::getDoubleTy(ctx), nullptr));
 
-        llvm::BasicBlock *body = llvm::BasicBlock::Create(ctx, "fun_body", fun);
-        llvm::IRBuilder<> bl(body);
+        // Add Arguments
+        for(string_view& str : freev){
+            new Argument(Type::getDoubleTy(ctx), str, fun);
+        }
+
+        BasicBlock *body = BasicBlock::Create(ctx, "fun_body", fun);
+        IRBuilder<> bl(body);
 
         // build bb
-        bl.CreateRet(_v->llvm_gen(bl));
+        int i = 0;
+        bl.CreateRet(_v->llvm_gen(bl, fun->arg_begin(), i));
     }
-
 #endif
 
 private:

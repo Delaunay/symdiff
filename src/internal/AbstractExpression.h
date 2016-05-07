@@ -6,8 +6,11 @@
 #include "Context.h"
 #include <iostream>
 
-#if USE_LLVM_IR
+#include <experimental/string_view>
+
+#ifdef USE_LLVM_IR
 #   include "llvm/IR/IRBuilder.h"
+#   include "llvm/IR/Argument.h"
 #endif
 
 // TODO
@@ -15,6 +18,9 @@
 // #include <unordered_set>
 
 namespace symdiff{
+
+//typedef std::experimental::basic_string_view<char> string_view;
+typedef std::string string_view;
 
 enum OutputType
 {
@@ -67,6 +73,8 @@ std::string to_string(ExprSubType t);
 
 class Expression{
 public:
+    typedef llvm::Function::arg_iterator ArgIterator;
+
     virtual ~Expression() {}
 
     /* Print representation */
@@ -147,8 +155,10 @@ public:
     virtual bool equal(SymExpr& a) = 0;
 
 #ifdef USE_LLVM_IR
-    virtual llvm::Value* llvm_gen(llvm::IRBuilder<>& ){}
+    virtual llvm::Value* llvm_gen(llvm::IRBuilder<>&, ArgIterator, int& i){}
 #endif
+
+    virtual void free_variables(std::vector<string_view>& vector) {}
 
 private:
 };
