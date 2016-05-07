@@ -102,6 +102,18 @@ Might work with MinGW 492 (32b)
 * Pretty Printing (C++, Python, C)
 * Basic Optimization (Constant folding, Mult by zero/one, etc...) (C++, Python)
 * LLVM-IR code gen (if LLVM is installed) (C++)
+
+	The expression `10 + y + 3 * x` becomes: (you can choose the function's name)
+
+        define double @my_fun(double %y, double %x) {
+        fun_body:
+           %0 = fmul double 3.000000e+00, %x
+           %1 = fadd double %y, %0
+           %2 = fadd double 1.000000e+01, %1
+           ret double %2
+        }
+	
+
 * `StrContext` (C++, Python) and `PtrContext` (C++)
 	* StrContext is used to substitute using variable's name (Only placeholders can be subs)
 	* PtrContext can be used to substitute a given node by another (No Name clashes, Any node can be subs)

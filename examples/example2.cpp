@@ -1,3 +1,21 @@
+/*
+ *      Generate LLVM-IR from a symbolic expression
+ *
+ *      Expr:
+ *      10 + y + 3 * x
+ *
+ *      LLVM-IR:
+ *      define double @my_fun(double %y, double %x) {
+ *      fun_body:
+ *         %0 = fmul double 3.000000e+00, %x
+ *         %1 = fadd double %y, %0
+ *         %2 = fadd double 1.000000e+01, %1
+ *         ret double %2
+ *      }
+ *
+ *
+ */
+
 #include "smath.h"
 #include <iostream>
 
@@ -46,7 +64,7 @@ int main(){
     // The function is very boring since constant folding already eval it
     Function *fun = m->getFunction("my_fun");
 
-    /*
+    ///*
     GenericValue arg1;    arg1.DoubleVal = 10;
     GenericValue arg2;    arg2.DoubleVal = 20;
 
