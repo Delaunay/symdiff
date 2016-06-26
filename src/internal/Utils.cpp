@@ -1,10 +1,14 @@
 #include "Utils.h"
 #include "Placeholder.h"
+#include "Visitor.h"
 
 #include <list>
 
 namespace symdiff{
 namespace internal{
+
+void BinaryOperator::visit(Visitor& v) { return v.binary(this);}
+void UnaryOperator::visit(Visitor& v)  { return v.unary(this); }
 
 void reorder(SymExpr& a, SymExpr& b){
 

@@ -6,6 +6,8 @@
  */
 
 #include "AbstractExpression.h"
+
+
 #include <memory>
 
 #ifdef USE_LLVM_IR
@@ -36,21 +38,23 @@ public:
         _value(v)
     {}
 
+    void visit(Visitor& v);
+
     static SymExpr make(T v){
-        if (v == 0)
+        if (v == T(0))
             return zero();
-        if (v == 1)
+        if (v == T(1))
             return one();
-        if (v == -1)
+        if (v == T(-1))
             return minus_one();
-        if (v == 2)
+        if (v == T(2))
             return two();
 
         return Expression::make<Scalar>(v);
     }
 
     std::ostream& print(std::ostream& out) {    return out << _value; }
-    std::ostream& gen(std::ostream& out, OutputType t) { return out << _value; }
+    std::ostream& gen(std::ostream& out, OutputType) { return out << _value; }
 
     // Helpers
     ExprSubType get_type() const { return EST_Scalar; }
@@ -131,7 +135,17 @@ private:
 };
 
 }
+}
 
+#include "Visitor.h"
+
+namespace symdiff {
+namespace internal{
+
+template<typename T>
+void Scalar<T>::visit(Visitor& v){ return v.scalar(this); }
+
+}
 }
 
 #endif

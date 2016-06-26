@@ -1,6 +1,8 @@
 #ifndef SYMDIF_SYM_HEADER
 #define SYMDIF_SYM_HEADER
 
+// #include "version.h"
+
 #include "internal/AbstractExpression.h"
 #include "internal/Utils.h"
 

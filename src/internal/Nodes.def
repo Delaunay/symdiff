@@ -1,0 +1,76 @@
+#ifndef SYMDIFF_NODES_DEFINITIONS
+#   error "This header is only meant to be included as an X-macro"
+#endif
+
+// the macro SYMDIFF_NODES_DEFINITIONS needs to be defined
+/*
+ *  This file use the X-Macro trick to define nodes.
+ *  Nodes are added here.
+ *
+ *  instead of having a single X-macro that needs to be defined
+ *  we have 3 X macro
+ *
+ *    - DEFINE_BINARY_NODE
+ *    - DEFINE_UNARY_NODE
+ *    - DEFINE_LEAF_NODE
+ *
+ *  Those macro are used to generate C++ code at compile time.
+ *  The visitor pattern will later be used to traverse the tree without
+ *  modifying the generated code.
+ *
+ *  Example: create a type_id enum
+ *
+ *  enum class TypeID {
+ *    #define SYMDIFF_NODES_DEFINITIONS
+ *      #define DEFINE_LEAF_NODE  (__type__, __str__, __repr__)  __str__,
+ *      #define DEFINE_UNARY_NODE (__type__, __str__, __repr__)  __str__,
+ *      #define DEFINE_BINARY_NODE(__type__, __str__, __repr__)  __str__,
+ *      #include "Nodes.def"
+ *    #undef SYMDIFF_NODES_DEFINITIONS
+ *  };
+ *
+ */
+
+// if not defined ignore them
+#ifndef DEFINE_BINARY_NODE
+#   define DEFINE_BINARY_NODE(__type__, __str__, __repr__)
+#endif
+
+#ifndef DEFINE_UNARY_NODE
+#   define DEFINE_UNARY_NODE(__type__, __str__, __repr__)
+#endif
+
+// yes a leaf is not a node, whatever
+#ifndef DEFINE_LEAF_NODE
+#   define DEFINE_LEAF_NODE(__type__, __str__, __repr__)
+#endif
+
+#define DEFINE_LEAF_NODE_SEC(a, b, c)
+#define DEFINE_BINARY_NODE_SEC(a, b, c)
+#define DEFINE_UNARY_NODE_SEC(a, b, c)
+
+
+DEFINE_LEAF_NODE_SEC(Leaf,        leaf,        leaf)
+DEFINE_LEAF_NODE(Placeholder, placeholder, p)
+DEFINE_LEAF_NODE(Scalar,      scalar,      s)
+
+DEFINE_BINARY_NODE_SEC(Binary, binary, binary)
+DEFINE_BINARY_NODE(Add,    add ,   +)
+DEFINE_BINARY_NODE(Mult,   mult,   *)
+DEFINE_BINARY_NODE(Pow,    pow ,   ^)
+
+DEFINE_UNARY_NODE_SEC(Unary, unary, unary)
+DEFINE_UNARY_NODE(Sub,   sub,   -)
+DEFINE_UNARY_NODE(Neg,   neg,   -)
+DEFINE_UNARY_NODE(Exp,   exp,   e)
+DEFINE_UNARY_NODE(Ln,    ln,    ln)
+
+DEFINE_UNARY_NODE(Cos,   cos,   cos)
+DEFINE_UNARY_NODE(Sin,   sin,   sin)
+DEFINE_UNARY_NODE(Tan,   tan,   tan)
+// must be last
+DEFINE_UNARY_NODE(Inv,   inv,   1/)
+
+#undef DEFINE_LEAF_NODE
+#undef DEFINE_UNARY_NODE
+#undef DEFINE_BINARY_NODE

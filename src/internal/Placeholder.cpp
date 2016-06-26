@@ -1,4 +1,5 @@
 #include "Placeholder.h"
+#include "Visitor.h"
 
 namespace symdiff {
 namespace internal{
@@ -21,6 +22,9 @@ const std::string&  get_name(SymExpr v){
             throw CastError("Expression does not hold a name");
     }
 }
+
+
+void Placeholder::visit(Visitor& v){ return v.placeholder(this); }
 
 }
 }

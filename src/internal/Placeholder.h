@@ -110,6 +110,9 @@ public:
         vector.push_back(_name);
     }
 
+
+    void visit(Visitor& v);
+
 private:
     std::string _name;
 };

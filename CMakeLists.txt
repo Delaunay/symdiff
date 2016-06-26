@@ -20,6 +20,8 @@ LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 SET(${CXX_STANDARD_REQUIRED} ON)
 
+ADD_COMPILE_OPTIONS(-Wall -pedantic -fno-rtti)
+
 # Project's Options
 # ====================================
 
@@ -86,3 +88,14 @@ IF(BUILD_EXAMPLES)
     MESSAGE(STATUS "Building examples")
     ADD_SUBDIRECTORY(examples)
 ENDIF(BUILD_EXAMPLES)
+
+
+# cmake shortcut
+# How to make those not run in make all
+ADD_CUSTOM_TARGET(compile-db
+    cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ${CMAKE_SOURCE_DIR})
+
+# should I pass tests too ?
+ADD_CUSTOM_TARGET(clang-tidy
+    clang-tidy -p= ${CMAKE_BINARY_DIR} -header-filter=.*
+        ${CMAKE_SOURCE_DIR}/src/*.cpp ${CMAKE_SOURCE_DIR}/src/*.h)

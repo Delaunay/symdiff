@@ -1,6 +1,8 @@
 #ifndef SYMDIF_ERROR_HEADER
 #define SYMDIF_ERROR_HEADER
 
+#include <string>
+
 namespace symdiff{
 
 class Error{
@@ -31,6 +33,10 @@ public:
     EvalError(const std::string& str): Error(str) {}
 };
 
+class VisitorError: public Error{
+public:
+    VisitorError(const std::string& str): Error(str) {}
+};
 
 }
 

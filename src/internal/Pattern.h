@@ -24,20 +24,22 @@ class Pattern: public Expression
 {
 public:
     // basic graph transformation
-    double full_eval(Context& c) final              {   throw EvalError("Patterns can not be evaluated"); }
-    SymExpr partial_eval(Context& c) final          {   throw EvalError("Patterns can not be evaluated"); }
-    double full_eval(PtrContext& c)  final          {   throw EvalError("Patterns can not be evaluated"); }
-    SymExpr partial_eval(PtrContext& c) final       {   throw EvalError("Patterns can not be evaluated"); }
-    SymExpr derivate(const std::string& name) final {   throw EvalError("Patterns can not be evaluated"); }
+    double full_eval(Context&) final              {   throw EvalError("Patterns can not be evaluated"); }
+    SymExpr partial_eval(Context&) final          {   throw EvalError("Patterns can not be evaluated"); }
+    double full_eval(PtrContext&)  final          {   throw EvalError("Patterns can not be evaluated"); }
+    SymExpr partial_eval(PtrContext&) final       {   throw EvalError("Patterns can not be evaluated"); }
+    SymExpr derivate(const std::string&) final    {   throw EvalError("Patterns can not be evaluated"); }
     int height(int i = 0) {  return i;   }
 
-    std::ostream& gen(std::ostream& out, OutputType t) final { return this->print(out); }
+    std::ostream& gen(std::ostream& out, OutputType) final { return this->print(out); }
 
     bool equal(SymExpr& s) final {  return sym_equal(s);  }
     bool is_pattern() final      {  return true;          }
 
     // this might be useful
-    SymExpr substitute(Context& x) {}
+    SymExpr substitute(Context&) {}
+
+    void visit(class Visitor&) {}
 
     //SymExpr& matched_expr() ;
 private:

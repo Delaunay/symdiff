@@ -44,6 +44,7 @@ public:
         _expr(expr)
     {}
 
+    virtual void visit(class Visitor& v);
     virtual UnaryFunction function() = 0;
 
     std::ostream& print(std::ostream& out, const std::string& op) {
@@ -127,6 +128,8 @@ public:
     BinaryOperator(SymExpr lhs, SymExpr rhs):
         _lhs(lhs), _rhs(rhs)
     {}
+
+    virtual void visit(class Visitor& v);
 
     std::ostream& print(std::ostream& out, const std::string& op) {
 

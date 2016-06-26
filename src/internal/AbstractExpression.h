@@ -5,8 +5,9 @@
 
 #include "Context.h"
 #include <iostream>
+#include <vector>
 
-#include <experimental/string_view>
+//#include <experimental/string_view>
 
 #ifdef USE_LLVM_IR
 #   include "llvm/IR/IRBuilder.h"
@@ -51,6 +52,11 @@ enum ExprSubType
     EST_Mult,
     EST_Pow,
 
+    // LLVM difine different operations
+    // I may need to add those
+    // EST_Div
+    // EST_Sub
+
     // Nodes::Unary
     UNARY_SUBTYPE   = 300,
     EST_Sub,
@@ -71,9 +77,12 @@ enum ExprSubType
 
 std::string to_string(ExprSubType t);
 
+
 class Expression{
 public:
+#ifdef USE_LLVM_IR
     typedef llvm::Function::arg_iterator ArgIterator;
+#endif
 
     virtual ~Expression() {}
 
@@ -110,6 +119,8 @@ public:
     bool operator < (const Expression& a) {
         return this->get_type() < a.get_type();
     }
+
+    virtual void visit(class Visitor& v) = 0;
 
     virtual std::ostream& gen(std::ostream& out, OutputType t) = 0;
 
@@ -155,10 +166,10 @@ public:
     virtual bool equal(SymExpr& a) = 0;
 
 #ifdef USE_LLVM_IR
-    virtual llvm::Value* llvm_gen(llvm::IRBuilder<>&, ArgIterator, int& i){}
+    virtual llvm::Value* llvm_gen(llvm::IRBuilder<>&, ArgIterator, int& ){}
 #endif
 
-    virtual void free_variables(std::vector<string_view>& vector) {}
+    virtual void free_variables(std::vector<string_view>&);
 
 private:
 };

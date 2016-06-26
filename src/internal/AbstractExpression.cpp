@@ -20,8 +20,11 @@ std::string to_string(ExprSubType t){
         case EST_Inv        : return "Inv";
         case EST_Exp        : return "Exp";
         case EST_Ln         : return "Ln";
+        default             : return "Not a Node";
     }
 }
+
+void Expression::free_variables(std::vector<string_view>&) {}
 
 }
 }

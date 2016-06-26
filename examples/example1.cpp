@@ -1,21 +1,65 @@
-#include "smath.h"
+//#include "smath.h"
+
+#include "internal/Nodes.h"
 #include <iostream>
+#include <functional>
 
 using namespace symdiff;
 using namespace std;
 
+struct PrettyPrintVisitor: public symdiff::internal::Visitor
+{
+    typedef std::function<void(Visitor&, internal::NodeImpl*, std::ostream&)> function_type;
+
+    PrettyPrintVisitor(std::ostream& out, Node n):
+        out(out)
+    {
+        vtable[int(TypeID::add)] = print_add;
+        vtable[int(TypeID::scalar)] = print_scalar;
+
+        dispatch(n.get());
+    }
+
+    virtual void dispatch(internal::NodeImpl* n){ return vtable[int(n->type)](*this, n, out);}
+
+    // does not seem possible to remove the first virtual function call
+    static void print_add(Visitor& self, internal::NodeImpl* n, std::ostream& out){
+        BinaryNode* b = static_cast<BinaryNode*>(n);
+        self.dispatch(b->lhs.get()); // lhs.get()->visit(*this);
+            out << " + ";
+        self.dispatch(b->rhs.get());
+    }
+
+    static void print_scalar(Visitor& self, internal::NodeImpl* n, std::ostream& out){
+        Scalar* s = static_cast<Scalar*>(n);
+        out << s->value;
+    }
+
+    function_type vtable[int(TypeID::Size)];
+    std::ostream& out;
+};
+
+
+
 int main(){
 
+    auto val = make_scalar(2);
+    auto expr = make_add(val, val);
 
-    auto x = make_var("x");
+    PrettyPrintVisitor(std::cout, expr);
 
-    auto f = exp(exp(ln(x * x + ln(x - one()) - ln(one() / ln(x)))));
+    std::cout << std::endl;
 
-    f.print(std::cout) << std::endl;
 
-    auto df = f.derivate("x");
+//    auto x = make_var("x");
 
-    df.reduce().print(std::cout) << std::endl;
+//    auto f = exp(exp(ln(x * x + ln(x - one()) - ln(one() / ln(x)))));
+
+//    f.print(std::cout) << std::endl;
+
+//    auto df = f.derivate("x");
+
+//    df.reduce().print(std::cout) << std::endl;
 
 /*
     auto x = make_var("x");
