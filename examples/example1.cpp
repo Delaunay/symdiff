@@ -2,41 +2,81 @@
 
 #include "internal/Nodes.h"
 #include <iostream>
+#include <vector>
 #include <functional>
 
 using namespace symdiff;
 using namespace std;
 
-struct PrettyPrintVisitor: public symdiff::internal::Visitor
+struct PrettyPrint: public symdiff::internal::Visitor
 {
-    typedef std::function<void(Visitor&, internal::NodeImpl*, std::ostream&)> function_type;
+    typedef std::function<void(PrettyPrint*, internal::NodeImpl*)> function_type;
 
-    PrettyPrintVisitor(std::ostream& out, Node n):
+    PrettyPrint(std::ostream& out):
         out(out)
     {
-        vtable[int(TypeID::add)] = print_add;
-        vtable[int(TypeID::scalar)] = print_scalar;
+        #define SYMDIFF_NODES_DEFINITIONS
+            #define DEFINE_LEAF_NODE(__type__, __str__, __repr__)  \
+                    _vtable[int(TypeID::__str__)] = &PrettyPrint::__str__;
 
-        dispatch(n.get());
+            #define DEFINE_UNARY_NODE(__type__, __str__, __repr__) \
+                    _vtable[int(TypeID::__str__)] = &PrettyPrint::unary_node;
+
+            #define DEFINE_BINARY_NODE(__type__, __str__, __repr__)\
+                    _vtable[int(TypeID::__str__)] = &PrettyPrint::binary_node;
+
+            #include "../src/internal/Nodes.def"
+        #undef SYMDIFF_NODES_DEFINITIONS
     }
 
-    virtual void dispatch(internal::NodeImpl* n){ return vtable[int(n->type)](*this, n, out);}
+    static void run(std::ostream& out, Node n){
+        return PrettyPrint(out).dispatch(n.get());
+    }
 
-    // does not seem possible to remove the first virtual function call
-    static void print_add(Visitor& self, internal::NodeImpl* n, std::ostream& out){
+    void dispatch(internal::NodeImpl* n) final {
+        return _vtable[int(n->type)](this, n);
+    }
+
+    // Binary node printing
+    void binary_node(internal::NodeImpl* n){
         BinaryNode* b = static_cast<BinaryNode*>(n);
-        self.dispatch(b->lhs.get()); // lhs.get()->visit(*this);
-            out << " + ";
-        self.dispatch(b->rhs.get());
+        out << "(";
+            this->dispatch(b->lhs.get());
+                out << " " + _operator[int(n->type)] + " ";
+            this->dispatch(b->rhs.get());
+        out << ")";
     }
 
-    static void print_scalar(Visitor& self, internal::NodeImpl* n, std::ostream& out){
+    // Unary Node printing
+    void unary_node(internal::NodeImpl* n){
+        UnaryNode* u = static_cast<UnaryNode*>(n);
+        out << _operator[int(n->type)] << "(";
+            this->dispatch(u->expr.get());
+        out << ")";
+    }
+
+    void scalar(internal::NodeImpl* n){
         Scalar* s = static_cast<Scalar*>(n);
         out << s->value;
     }
 
-    function_type vtable[int(TypeID::Size)];
+    void placeholder(internal::NodeImpl* n){
+        Placeholder* s = static_cast<Placeholder*>(n);
+        out << s->name;
+    }
+
     std::ostream& out;
+    function_type _vtable[int(TypeID::Size)];
+
+    const std::vector<string> _operator{
+        #define SYMDIFF_NODES_DEFINITIONS
+            #define DEFINE_LEAF_NODE(__type__, __str__, __repr__) #__repr__,
+            #define DEFINE_UNARY_NODE(__type__, __str__, __repr__) #__repr__,
+            #define DEFINE_BINARY_NODE(__type__, __str__, __repr__) #__repr__,
+
+            #include "../src/internal/Nodes.def"
+        #undef SYMDIFF_NODES_DEFINITIONS
+    };
 };
 
 
@@ -46,7 +86,7 @@ int main(){
     auto val = make_scalar(2);
     auto expr = make_add(val, val);
 
-    PrettyPrintVisitor(std::cout, expr);
+    PrettyPrint::run(std::cout, expr);
 
     std::cout << std::endl;
 

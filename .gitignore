@@ -23,7 +23,7 @@ Makefile*
 *.layout
 *.save
 *.user*
-
+/dependencies/
 /build/
 /build*/
 /old/

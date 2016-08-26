@@ -5,35 +5,31 @@
 #include <ostream>       // output stream
 #include <unordered_map> // Hashtable
 
+#define NOEXCEPT
+
 namespace symdiff{
 
     // Forward declaration
     namespace internal{
-        class Expression;
-        typedef std::shared_ptr<Expression> SymExpr;
+        struct NodeImpl;
     }
 
-    // Name Context
-    // auto x = make_var("x");
-    // NameContext ctx = { {"x": make_val(0.25)} };
-    typedef internal::SymExpr SymExpr;
-    typedef std::unordered_map<std::string, SymExpr> NameContext;
-    typedef NameContext Context;
+    typedef std::shared_ptr<internal::NodeImpl> Node;
+    typedef std::unordered_map<std::string, Node> NameContext;
 
     // print context
-    std::ostream& operator << (std::ostream& out, Context& ctx);
-
+    std::ostream& operator << (std::ostream& out, NameContext& ctx);
 
     /// std::hash specialization for shared_ptr.
     template<typename T>
     struct shared_ptr_hash: public std::hash<std::shared_ptr<T>>
     {
-        size_t operator()(const std::shared_ptr<T>& s) const noexcept
+        size_t operator()(const std::shared_ptr<T>& s) const NOEXCEPT
         {
             return std::hash<T*>()(s.get());
         }
 
-        size_t operator()(T* const & s) const noexcept
+        size_t operator()(T* const & s) const NOEXCEPT
         {
             return std::hash<T*>()(s);
         }
@@ -43,8 +39,8 @@ namespace symdiff{
     // auto x = make_var("x");
     // PtrContext ctx = { {x: make_val(0.25)} };
 
-    typedef std::unordered_map<internal::Expression*, SymExpr,
-                shared_ptr_hash<internal::Expression>> PtrContext;
+    typedef std::unordered_map<internal::NodeImpl*, Node,
+                shared_ptr_hash<internal::NodeImpl*>> PtrContext;
 
 
 

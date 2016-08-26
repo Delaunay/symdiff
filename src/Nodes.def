@@ -32,6 +32,10 @@
  */
 
 // if not defined ignore them
+#ifndef DEFINE_NNARY_NODE
+#   define DEFINE_NNARY_NODE(__type__, __str__, __repr__)
+#endif
+
 #ifndef DEFINE_BINARY_NODE
 #   define DEFINE_BINARY_NODE(__type__, __str__, __repr__)
 #endif
@@ -50,9 +54,13 @@
 #define DEFINE_UNARY_NODE_SEC(a, b, c)
 
 
-DEFINE_LEAF_NODE_SEC(Leaf,        leaf,        leaf)
+DEFINE_LEAF_NODE_SEC(Leaf,    leaf,        leaf)
 DEFINE_LEAF_NODE(Placeholder, placeholder, p)
-DEFINE_LEAF_NODE(Scalar,      scalar,      s)
+DEFINE_LEAF_NODE(Value,       value,       v)
+
+//DEFINE_NNARY_NODE_SEC(Nnary, nnary, nnary)
+//DEFINE_NNARY_NODE(Add,    add ,   +)
+//DEFINE_NNARY_NODE(Mult,   mult,   *)
 
 DEFINE_BINARY_NODE_SEC(Binary, binary, binary)
 DEFINE_BINARY_NODE(Add,    add ,   +)
@@ -60,15 +68,15 @@ DEFINE_BINARY_NODE(Mult,   mult,   *)
 DEFINE_BINARY_NODE(Pow,    pow ,   ^)
 
 DEFINE_UNARY_NODE_SEC(Unary, unary, unary)
-DEFINE_UNARY_NODE(Sub,   sub,   -)
+//DEFINE_UNARY_NODE(Sub,   sub,   -)
 DEFINE_UNARY_NODE(Neg,   neg,   -)
-DEFINE_UNARY_NODE(Exp,   exp,   e)
-DEFINE_UNARY_NODE(Ln,    ln,    ln)
+//DEFINE_UNARY_NODE(Exp,   exp,   e)
+//DEFINE_UNARY_NODE(Ln,    ln,    ln)
 
-DEFINE_UNARY_NODE(Cos,   cos,   cos)
-DEFINE_UNARY_NODE(Sin,   sin,   sin)
-DEFINE_UNARY_NODE(Tan,   tan,   tan)
-// must be last
+//DEFINE_UNARY_NODE(Cos,   cos,   cos)
+//DEFINE_UNARY_NODE(Sin,   sin,   sin)
+//DEFINE_UNARY_NODE(Tan,   tan,   tan)
+//// must be last
 DEFINE_UNARY_NODE(Inv,   inv,   1/)
 
 #undef DEFINE_LEAF_NODE

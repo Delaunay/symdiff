@@ -20,12 +20,12 @@ LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 SET(${CXX_STANDARD_REQUIRED} ON)
 
-ADD_COMPILE_OPTIONS(-Wall -pedantic -fno-rtti)
+# ADD_COMPILE_OPTIONS(-Wall -pedantic -fno-rtti)
 
 # Project's Options
 # ====================================
 
-OPTION(BUILD_TESTING        "Enable tests"       ON)
+OPTION(BUILD_TESTING        "Enable tests"       OFF)
 OPTION(USE_LLVM_IR          "Enable LLVM-IR"     OFF)
 OPTION(BUILD_EXAMPLES       "Build examples"     OFF)
 OPTION(BUILD_BENCHMARK      "Build Benchmarks"   OFF)
@@ -36,7 +36,14 @@ OPTION(BUILD_SPHINX         "Build Sphinx docs"  OFF)
 # Binary/pre-compiled Dependencies
 # ====================================
 
-FIND_PACKAGE(Git REQUIRED)
+# Add SFML cmake script
+LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/dependencies/SFML/cmake/Modules")
+# Where SFML should be
+SET(SFML_ROOT "${CMAKE_SOURCE_DIR}/dependencies/SFML/")
+# Find SFML
+FIND_PACKAGE(SFML 2 COMPONENTS graphics window system)
+
+# FIND_PACKAGE(Git)
 
 IF(${USE_LLVM_IR})
     FIND_PACKAGE(LLVM)
@@ -65,7 +72,7 @@ ENDIF()
 
 # Find revision ID and hash of the sourcetree
 INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR})
-INCLUDE(cmake/genrev.cmake)
+# INCLUDE(cmake/genrev.cmake)
 
 # Subdirectories
 # ====================================

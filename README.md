@@ -28,18 +28,15 @@ Might work with MinGW 492 (32b)
     x = Unknown('x')
     y = Unknown('y')
 
-    val = {x: scalar(5)}
+    env = {x: scalar(5), y: scalar(2)}
 
-    f = x ** 3 - y ** 2    # add(pow(x, y), mult(y, x))
+    f = x ** 3 - y ** 2   
+	print(f)
+	
     dfdx = f.derivate(x)
-
-    print(' f   : ', f,    '\tEval: ', f.eval(val))
-    print('dfdx : ', dfdx, '\tEval: ', dfdx.eval(val))
-
-    val = {x: scalar(5), y: scalar(2)}
-    print(' f   : ', f,    '\tEval: ', f.full_eval(val))
-    print('dfdx : ', dfdx, '\tEval: ', dfdx.full_eval(val))
-
+	dfdy = f.derivate(y)
+	
+	val = f.eval(env)
 
 # C++
 
@@ -63,7 +60,7 @@ Might work with MinGW 492 (32b)
         df.print(std::cout) << std::endl;
 
         /*  Full Eval */
-        Context c = {{"x", make_val(4)}, {"y", make_val(3)}};
+        Context env = {{"x", make_val(4)}, {"y", make_val(3)}};
 
         std::cout << f.full_eval(c) << std::endl;
         std::cout << df.full_eval(c) << std::endl;
