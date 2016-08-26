@@ -58,47 +58,84 @@ public:
     }
 };
 
-class Statement: public thor::ConcaveShape
+class Statement: public sf::Drawable
 {
 public:
-    static constexpr float stmt_margin{10};
-
     Statement()
     {
         // Top Block
         // -----------------
-        setPointCount(24);
-        setFillColor(sf::Color(200, 100, 100));
-        setOutlineColor(sf::Color(255, 100, 100));
-        setOutlineThickness(2.f);
+        _top.setPointCount(12);
+        _top.setFillColor(sf::Color(200, 100, 100));
+        _top.setOutlineColor(sf::Color(255, 100, 100));
+        _top.setOutlineThickness(2.f);
 
-        setPoint(0, sf::Vector2f(0, 0));
-        setPoint(1, sf::Vector2f(length1, 0));
-        setPoint(2, sf::Vector2f(length1 + offset_length, offset_depth));
-        setPoint(3, sf::Vector2f(length1 + offset_length + length2, offset_depth));
-        setPoint(4, sf::Vector2f(length1 + offset_length * 2 + length2, 0));
-        setPoint(5, sf::Vector2f(min_width + length1, 0));
+        _top.setPoint(0, sf::Vector2f(0, 0));
+        _top.setPoint(1, sf::Vector2f(length1, 0));
+        _top.setPoint(2, sf::Vector2f(length1 + offset_length, offset_depth));
+        _top.setPoint(3, sf::Vector2f(length1 + offset_length + length2, offset_depth));
+        _top.setPoint(4, sf::Vector2f(length1 + offset_length * 2 + length2, 0));
+        _top.setPoint(5, sf::Vector2f(min_width + length1, 0));
 
         // samething but shifted by length1
         for(std::size_t i = 0; i < 5; ++i)
-            setPoint(11 - i, getPoint(i) + sf::Vector2f(stmt_margin, min_height));
+            _top.setPoint(11 - i, _top.getPoint(i) + sf::Vector2f(length1, min_height));
 
         // except point 6 which is not shifted
-        setPoint(6, getPoint(5) + sf::Vector2f(0, min_height));
+        _top.setPoint(6, _top.getPoint(5) + sf::Vector2f(0, min_height));
+
 
         // Bot Block
         // ----------------
         float block_height = 50;
 
+        _bot.setPointCount(12);
+        _bot.setFillColor(sf::Color(200, 100, 100));
+        _bot.setOutlineColor(sf::Color(255, 100, 100));
+        _bot.setOutlineThickness(2.f);
+
         for(std::size_t i = 0; i < 6; ++i)
-            setPoint(i + 12, getPoint(11 - i) + sf::Vector2f(0, block_height));
+            _bot.setPoint(i, _top.getPoint(11 - i) + sf::Vector2f(0, block_height));
 
         // samething but shifted by length1
         for(std::size_t i = 0; i < 5; ++i)
-            setPoint(11 - i + 12, getPoint(i + 12) + sf::Vector2f(-stmt_margin, min_height));
+            _bot.setPoint(11 - i, _bot.getPoint(i) + sf::Vector2f(-length1, min_height));
 
-        setPoint(6 + 12, getPoint(5 + 12) + sf::Vector2f(0, min_height));
+        _bot.setPoint(6, _bot.getPoint(5) + sf::Vector2f(0, min_height));
+
+        // left block
+        // -------------
+        _left.setPointCount(4);
+        _left.setFillColor(sf::Color(200, 100, 100));
+        _left.setOutlineColor(sf::Color(255, 100, 100));
+        _left.setOutlineThickness(2.f);
+
+        _left.setPoint(0, _top.getPoint(0));
+        _left.setPoint(1, _top.getPoint(11));
+        _left.setPoint(2, _bot.getPoint(0));
+        _left.setPoint(3, _bot.getPoint(11));
     }
+
+     void draw(sf::RenderTarget& target, sf::RenderStates states) const {
+         target.draw(_top, states);
+         target.draw(_bot, states);
+         target.draw(_left, states);
+
+//         sf::RectangleShape c;
+//         c.setSize(sf::Vector2f(2, 2));
+//         c.setPosition(_bot.getPoint(5));
+//         target.draw(c, states);
+
+     }
+
+     sf::Rect<float> getGlobalBounds(){  return sf::Rect<float>(); }
+     void setFillColor(sf::Color) {}
+     void setPosition(float x, float y) {}
+
+private:
+    thor::ConcaveShape _top;
+    thor::ConcaveShape _bot;
+    sf::ConvexShape    _left;
 
 };
 
