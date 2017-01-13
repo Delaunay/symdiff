@@ -44,6 +44,14 @@
 #   define DEFINE_UNARY_NODE(__type__, __str__, __repr__)
 #endif
 
+#ifndef DEFINE_SVM_NODE
+#   define DEFINE_SVM_NODE(__type__, __str__, __repr__)
+#endif
+
+#ifndef DEFINE_RVM_NODE
+#   define DEFINE_RVM_NODE(__type__, __str__, __repr__)
+#endif
+
 // yes a leaf is not a node, whatever
 #ifndef DEFINE_LEAF_NODE
 #   define DEFINE_LEAF_NODE(__type__, __str__, __repr__)
@@ -76,9 +84,23 @@ DEFINE_UNARY_NODE(Neg,   neg,   -)
 //DEFINE_UNARY_NODE(Cos,   cos,   cos)
 //DEFINE_UNARY_NODE(Sin,   sin,   sin)
 //DEFINE_UNARY_NODE(Tan,   tan,   tan)
-//// must be last
+// must be last
 DEFINE_UNARY_NODE(Inv,   inv,   1/)
+
+// Virtual Machine Operation
+// Those node do not exist in the language
+
+// Stack VM
+DEFINE_SVM_NODE(Push, push, push)
+DEFINE_SVM_NODE(Lookup, lookup, lookup)
+
+// Register VM
+DEFINE_RVM_NODE(Load, load, load)
+DEFINE_RVM_NODE(Move, move, move)
+DEFINE_RVM_NODE(Lookup, lookup, lookup)
 
 #undef DEFINE_LEAF_NODE
 #undef DEFINE_UNARY_NODE
 #undef DEFINE_BINARY_NODE
+#undef DEFINE_SVM_NODE
+#undef DEFINE_RVM_NODE

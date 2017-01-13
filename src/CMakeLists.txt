@@ -8,7 +8,7 @@ LINK_DIRECTORIES(../dependencies/thor/lib/)
 #INCLUDE_DIRECTORIES(../dependencies/SDL2/include)
 #LINK_DIRECTORIES(../dependencies/SDL2/lib/x64)
 
-MESSAGE(STATUS ${SFML_LIBRARIES})
+# MESSAGE(STATUS ${SFML_LIBRARIES})
 
 SET(SRC_LIST
     Nodes.h
@@ -21,17 +21,21 @@ SET(SRC_LIST
     PartialEval.h
     DeepCopy.h
     Substitution.h
-    LLVM.h
+    LLVMGen.h
     Equiv.h
     Sym.h
     Sym.cpp
-    StackGenerator.h
+    StackVM.h
+    RegisterVM.h
 )
 
 SET(${CXX_STANDARD_REQUIRED} ON)
-
-ADD_EXECUTABLE(symdiff main.cpp ${SRC_LIST})
+ADD_LIBRARY(symdiff ${SRC_LIST})
 SET_PROPERTY(TARGET symdiff PROPERTY CXX_STANDARD 14)
+
+ADD_EXECUTABLE(dummy main.cpp )
+TARGET_LINK_LIBRARIES(dummy symdiff)
+SET_PROPERTY(TARGET dummy PROPERTY CXX_STANDARD 14)
 
 ADD_EXECUTABLE(wdiff window.cpp ${SRC_LIST})
 TARGET_LINK_LIBRARIES(wdiff thor-d ${SFML_LIBRARIES})

@@ -16,7 +16,10 @@
  *
  */
 
-#include "smath.h"
+#include "Builder.h"
+#include "PrettyPrint.h"
+#include "LLVMGen.h"
+
 #include <iostream>
 
 #include "llvm/IR/LLVMContext.h"
@@ -35,12 +38,16 @@ using namespace std;
 
 int main(){
 
-    auto x = make_var("x");
-    auto y = make_var("y");
+    auto x = Builder::placeholder("x");
+    auto y = Builder::placeholder("y");
+    auto mult = Builder::mult;
+    auto add  = Builder::add;
+    auto three = Builder::value(3);
+    auto ten   = Builder::value(10);
 
-    Sym f = y + x * 3 + 10;
+    auto f = add(y, add(mult(x, three), ten));
 
-    f.print(std::cout) << std::endl;
+    PrettyPrint::run(std::cout, f) << std::endl;
 
     //
     //  Initialize LLVM
@@ -54,19 +61,16 @@ int main(){
     //
     //  Generate Function from symbolic expr
     //
-
-    f.llvm_gen("my_fun", m, ctx);
+    auto fun = LLVMGen::make_llvm_function("my_fun", m, ctx);
+               LLVMGen::run(fun, ctx, f);
 
     outs() << "We just constructed this LLVM module:\n\n" << *m;
     outs() << "\n\nRunning my_fun: \n";
     outs().flush();
 
-    // The function is very boring since constant folding already eval it
-    Function *fun = m->getFunction("my_fun");
-
     ///*
-    GenericValue arg1;    arg1.DoubleVal = 10;
-    GenericValue arg2;    arg2.DoubleVal = 20;
+    GenericValue arg1;    arg1.DoubleVal = 1;
+    GenericValue arg2;    arg2.DoubleVal = 2;
 
     std::vector<GenericValue> args = {arg1, arg2};
 
@@ -74,7 +78,9 @@ int main(){
     //  Create Execution Engine
     //
     ExecutionEngine* EE = EngineBuilder(std::move(Owner)).create();
-    GenericValue gv = EE->runFunction(fun, args);   // Bad alloc here
+    // Assertion failed: Index < Length && "Invalid index!", file C:\Users\newton\source\llvm\include\llvm/ADT/ArrayRef.h, line 186
+    // Used to work on linux
+    GenericValue gv = EE->runFunction(fun, args);
 
     //outs() << "Result: " << gv.FloatVal   << " \t" << 18 << "\n";
     //outs() << "Result: " << gv.IntVal     << " \t" << 18 << "\n";

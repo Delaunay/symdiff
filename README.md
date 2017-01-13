@@ -11,7 +11,7 @@ relatively simple example of how it could be implemented.
 * src/ for symbolic diff in C++
 * csymdiff/ for symbolic diff in C
 
-If you are using MinGW. You need to disable pthreads om windows
+If you are using MinGW. You need to disable pthreads on windows
 (`cmake -Dgtest_disable_pthreads=ON`)
 
 # Requirement
@@ -20,8 +20,7 @@ If you are using MinGW. You need to disable pthreads om windows
 * C : None
 * C++ : cmake, LLVM is optional
 
-Compiled with GCC 5.3.1 and LLVM-3.8 on Xubuntu (16.04 - 64b).
-Might work with MinGW 492 (32b)
+Compiled with MSVC2015 (64bit) and LLVM-3.8.1 on Windows 10
 
 # Python
 
@@ -115,6 +114,7 @@ Might work with MinGW 492 (32b)
 	* StrContext is used to substitute using variable's name (Only placeholders can be subs)
 	* PtrContext can be used to substitute a given node by another (No Name clashes, Any node can be subs)
 * Pattern Matching (Partial Implementation) (C++)
+* Stack Based VM
 
 # TODO
 

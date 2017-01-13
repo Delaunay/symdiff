@@ -4,7 +4,8 @@
 #include "PartialEval.h"
 #include "Derivate.h"
 
-#include "StackGenerator.h"
+#include "StackVM.h"
+#include "RegisterVM.h"
 
 #include <iostream>
 
@@ -37,8 +38,21 @@ int main()
 
     PrettyPrint::run(std::cout, g) << "\n";
 
-    std::cout << "Stack Generator\n";
-    auto s = StackGenerator::run( g);
+    std::cout << "Stack Generator\n"
+              << std::string(20, '-') << "\n";
+
+    auto s = StackGenerator::run(g);
+    print(std::cout, s);
+
+    std::cout << std::string(20, '=') << "\n";
+
+    std::cout << "Register Generator\n"
+              << std::string(20, '-') << "\n";
+
+    auto r = RegisterGenerator::run(g);
+    print(std::cout, r);
+
+    std::cout << std::string(20, '=') << "\n";
 
     NameContext env2 {
         {"x", Builder::value(2)},
@@ -48,9 +62,8 @@ int main()
     };
 
     std::cout << "eval: " << StackVM::run(env2, s) << std::endl;
+    std::cout << "eval: " << RegisterVM::run(env2, r) << std::endl;
     std::cout << "eval: " << FullEval::run(env2, g) << std::endl;
-
-   // s.print(std::cout);
 
     return 0;
 }

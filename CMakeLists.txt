@@ -46,25 +46,24 @@ FIND_PACKAGE(SFML 2 COMPONENTS graphics window system)
 # FIND_PACKAGE(Git)
 
 IF(${USE_LLVM_IR})
-    FIND_PACKAGE(LLVM)
+    # you need that variable to be present
+    # SET LLVM_DIR C:/Program Files/LLVM/share/llvm/cmake
+    FIND_PACKAGE(LLVM REQUIRED CONFIG)
 
     IF(${LLVM_FOUND})
         MESSAGE(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
         MESSAGE(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
 
-        # I think cmake llvm utils 'bug' (seek usr/lib/llvm instead of usr/lib/llvm-3.8)
-        INCLUDE_DIRECTORIES("/usr/lib/llvm-3.8/include/")
+        INCLUDE_DIRECTORIES(${LLVM_INCLUDE_DIRS})
         ADD_DEFINITIONS(${LLVM_DEFINITIONS})
-
-            #ExecutionEngine
-            #Interpreter
-            #MC
 
         llvm_map_components_to_libnames(LLVM_LIBS
             Support
             Core
             nativecodegen)
-
+            #ExecutionEngine
+            #Interpreter
+            #MC
     ENDIF()
 ENDIF()
 
