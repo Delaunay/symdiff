@@ -20,6 +20,7 @@ constexpr float height{10};
 constexpr float min_width{length1 + offset_length * 2 + length2 + margin};
 constexpr float min_height{height + margin};
 
+
 class Block: public thor::ConcaveShape
 {
 public:
@@ -56,9 +57,13 @@ public:
         setPoint(5, sf::Vector2f(f, 0));
         setPoint(6, sf::Vector2f(f, min_height));
     }
+
+    bool intersects(sf::Rect<float> r){
+        return getGlobalBounds().intersects(r);
+    }
 };
 
-class Statement: public sf::Drawable
+class Statement: public sf::Drawable, public sf::Transformable
 {
 public:
     Statement()
@@ -108,12 +113,12 @@ public:
         _left.setPointCount(4);
         _left.setFillColor(sf::Color(200, 100, 100));
         _left.setOutlineColor(sf::Color(255, 100, 100));
-        _left.setOutlineThickness(2.f);
+        //_left.setOutlineThickness(1.f);
 
-        _left.setPoint(0, _top.getPoint(0));
+        _left.setPoint(0, _top.getPoint(0) + sf::Vector2f(-2, 0));
         _left.setPoint(1, _top.getPoint(11));
         _left.setPoint(2, _bot.getPoint(0));
-        _left.setPoint(3, _bot.getPoint(11));
+        _left.setPoint(3, _bot.getPoint(11) + sf::Vector2f(-2, 0));
     }
 
      void draw(sf::RenderTarget& target, sf::RenderStates states) const {
@@ -129,8 +134,24 @@ public:
      }
 
      sf::Rect<float> getGlobalBounds(){  return sf::Rect<float>(); }
-     void setFillColor(sf::Color) {}
-     void setPosition(float x, float y) {}
+
+     void setFillColor(sf::Color c) {
+         _top.setFillColor(c);
+         _bot.setFillColor(c);
+         _left.setFillColor(c);
+     }
+     void setPosition(float x, float y) {
+         _top.setPosition(x, y);
+         _bot.setPosition(x, y);
+         _left.setPosition(x, y);
+     }
+
+     // click on one of the component
+     bool intersects(sf::Rect<float> r){
+         return _top.getGlobalBounds().intersects(r) ||
+                _bot.getGlobalBounds().intersects(r) ||
+                _left.getGlobalBounds().intersects(r);
+     }
 
 private:
     thor::ConcaveShape _top;
@@ -140,7 +161,7 @@ private:
 };
 
 struct Cursor{
-    sf::Shape* selected{nullptr};
+    sf::Transformable* selected{nullptr};
 };
 
 
@@ -151,9 +172,12 @@ int main()
     window.setVerticalSyncEnabled(true);
 
     // Create a concave shape by directly inserting the polygon points
-    Statement b;
+    Statement s;
     //b.set_width(100);
-    b.setPosition(20, 20);
+    s.setPosition(20, 20);
+    Block b;
+    b.setPosition(50, 50);
+
 
     sf::RectangleShape r1; r1.setSize(sf::Vector2f(1, 1000));
     sf::RectangleShape r2; r2.setSize(sf::Vector2f(1000, 1));
@@ -194,8 +218,8 @@ int main()
             {
                 case sf::Event::MouseButtonPressed:{
                     if (sf::Mouse::Button::Left == event.mouseButton.button){
-                        if (bu.intersects(cu)){
-                            cursor.selected = reinterpret_cast<sf::Shape*>(&b);
+                        if (b.intersects(cu)){
+                            cursor.selected = dynamic_cast<sf::Transformable*>(&b);
                             b.setFillColor(sf::Color(0, 0, 255));
                         }
                     }
@@ -210,7 +234,7 @@ int main()
 
                 case sf::Event::MouseMoved:{
                     if (cursor.selected){
-                        cursor.selected->setPosition(event.mouseMove.x, event.mouseMove.y);
+                        b.setPosition(event.mouseMove.x, event.mouseMove.y);
                     }
 
                     break;
@@ -228,6 +252,7 @@ int main()
         window.draw(b1);
         window.draw(b2);
 
+        window.draw(s);
         window.draw(b);
         window.draw(r1);
         window.draw(r2);

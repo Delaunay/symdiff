@@ -25,6 +25,7 @@ SET(SRC_LIST
     Equiv.h
     Sym.h
     Sym.cpp
+    StackGenerator.h
 )
 
 SET(${CXX_STANDARD_REQUIRED} ON)

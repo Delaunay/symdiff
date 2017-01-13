@@ -14,8 +14,9 @@ struct PrettyPrint: public Visitor
         out(out)
     {}
 
-    static void run(std::ostream& out, Node n){
+    static std::ostream& run(std::ostream& out, Node n){
         PrettyPrint(out).dispatch(n);
+        return out;
     }
 
 #define SYMDIFF_NODES_DEFINITIONS
