@@ -1,7 +1,12 @@
 #ifndef SYMDIFF_INTERNAL_LLVM_HEADER_
 #define SYMDIFF_INTERNAL_LLVM_HEADER_
 
-//#define SYMDIFF_LLVM
+#include "version.h"
+
+#if defined(LLVM_FOUND) && defined(USE_LLVM_IR)
+#   define SYMDIFF_LLVM
+#endif
+
 #ifdef SYMDIFF_LLVM
 
 #include <cassert>

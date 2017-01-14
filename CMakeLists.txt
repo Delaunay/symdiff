@@ -43,7 +43,8 @@ SET(SFML_ROOT "${CMAKE_SOURCE_DIR}/dependencies/SFML/")
 # Find SFML
 FIND_PACKAGE(SFML 2 COMPONENTS graphics window system)
 
-# FIND_PACKAGE(Git)
+SET(Git_EXECUTABLE "C:/Program Files (x86)/Git/bin/")
+FIND_PACKAGE(Git)
 
 IF(${USE_LLVM_IR})
     # you need that variable to be present
@@ -71,7 +72,7 @@ ENDIF()
 
 # Find revision ID and hash of the sourcetree
 INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR})
-# INCLUDE(cmake/genrev.cmake)
+INCLUDE(cmake/genrev.cmake)
 
 # Subdirectories
 # ====================================

@@ -20,15 +20,15 @@
 namespace symdiff
 {
 
-const int SCALAR_PREALLOC_START = -100;
-const int SCALAR_PREALLOC_END   = 100;
-
 Node minus_one();
 Node zero();
 Node one();
 Node two();
 
 namespace internal {
+    const int SCALAR_PREALLOC_START = -100;
+    const int SCALAR_PREALLOC_END   = 100;
+
     std::vector<Node> _gen_values(int s = SCALAR_PREALLOC_START, int e = SCALAR_PREALLOC_END){
         std::vector<Node> v(e - s + 1);
         for(int i = 0; i < (e - s) + 1; ++i)
@@ -48,9 +48,9 @@ namespace internal {
 }
 
 inline Node minus_one(){    return internal::values(-1);   }
-inline Node zero()     {    return internal::values(0);   }
-inline Node one()      {    return internal::values(1);   }
-inline Node two()      {    return internal::values(2);   }
+inline Node zero()     {    return internal::values( 0);   }
+inline Node one()      {    return internal::values( 1);   }
+inline Node two()      {    return internal::values( 2);   }
 
 bool is_null(Node& ptr)          {    return ptr.get() == internal::zero_ptr();         }
 bool is_one(Node&  ptr)          {    return ptr.get() == internal::one_ptr();          }
@@ -76,37 +76,38 @@ public:
 
 // Hollow class for now
 class Builder{
-  public:
+public:
 
   // Helpers: node builder
   // Those implement basic optimization (constant folding and trivial simplification)
   // You probably always want to use them.
 
-  // Binary
-  static Node add (Node lhs, Node rhs);
-  static Node mult(Node lhs, Node rhs);
-  static Node pow (Node lhs, Node rhs);
+    // Binary
+    static Node add (Node lhs, Node rhs);
+    static Node mult(Node lhs, Node rhs);
+    static Node pow (Node lhs, Node rhs);
 //  static Node div (Node lhs, Node rhs);
 //  static Node sub (Node lhs, Node rhs);
 
-  // Unary
-  static Node inv(Node expr);
-  static Node neg(Node expr);
+    // Unary
+    static Node inv(Node expr);
+    static Node neg(Node expr);
 
   // Leafs
   // Avoid allocating memory for commonly used values (0, 1, etc...)
     static Node value(double val){
         int v = int(val);
 
-        if (v < SCALAR_PREALLOC_START || v > SCALAR_PREALLOC_END)
+        if (v < internal::SCALAR_PREALLOC_START ||
+            v > internal::SCALAR_PREALLOC_END)
             return make_value(val);
 
       return internal::values(v);
   }
 
-  // This one does not anything special but it is nice to have it for
-  // consistency
-  static Node placeholder(const std::string& name) { return make_placeholder(name); }
+      // This one does not anything special but it is nice to have it for
+      // consistency
+      static Node placeholder(const std::string& name) { return make_placeholder(name); }
 };
 
 void reorder(Node& lhs, Node& rhs){
