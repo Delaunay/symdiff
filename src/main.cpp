@@ -13,8 +13,10 @@ using namespace symdiff;
 
 int main()
 {
+
     auto x = Builder::placeholder("x1");
     auto f = Builder::mult(Builder::add(one(), two()), x);
+
 
     PrettyPrint::run(std::cout, f);
 

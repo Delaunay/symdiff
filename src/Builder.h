@@ -6,6 +6,8 @@
 
 #include <cmath>
 
+#include <iostream>
+
 // Useful for debugging
 // disable basic simplifications
 //#define SYMDIFF_NO_SIMP
@@ -18,17 +20,37 @@
 namespace symdiff
 {
 
-// Pre allocate common values
-inline Node minus_one(){    static Node z = make_value(-1); return z;   }
-inline Node zero()     {    static Node z = make_value( 0); return z;   }
-inline Node one()      {    static Node z = make_value(+1); return z;   }
-inline Node two()      {    static Node z = make_value(+2); return z;   }
+const int SCALAR_PREALLOC_START = -100;
+const int SCALAR_PREALLOC_END   = 100;
+
+Node minus_one();
+Node zero();
+Node one();
+Node two();
 
 namespace internal {
+    std::vector<Node> _gen_values(int s = SCALAR_PREALLOC_START, int e = SCALAR_PREALLOC_END){
+        std::vector<Node> v(e - s + 1);
+        for(int i = 0; i < (e - s) + 1; ++i)
+            v[i] = make_value(s + i);
+        return v;
+    }
+
+    // Pre allocate common values
+    Node values(int i){
+        static std::vector<Node> val = _gen_values();
+        return val[i - SCALAR_PREALLOC_START];
+    }
+
     // Get pointer to value zero
     NodeRef zero_ptr(){   static NodeImpl* zp = zero().get();  return zp;  }
     NodeRef one_ptr() {   static NodeImpl* zp = one().get();   return zp;  }
 }
+
+inline Node minus_one(){    return internal::values(-1);   }
+inline Node zero()     {    return internal::values(0);   }
+inline Node one()      {    return internal::values(1);   }
+inline Node two()      {    return internal::values(2);   }
 
 bool is_null(Node& ptr)          {    return ptr.get() == internal::zero_ptr();         }
 bool is_one(Node&  ptr)          {    return ptr.get() == internal::one_ptr();          }
@@ -73,14 +95,13 @@ class Builder{
 
   // Leafs
   // Avoid allocating memory for commonly used values (0, 1, etc...)
-  static Node value(double val){
-      switch(int(val)){
-        case -1: return minus_one();
-        case  0: return zero();
-        case  1: return one();
-        case  2: return two();
-        default: return make_value(val);
-      }
+    static Node value(double val){
+        int v = int(val);
+
+        if (v < SCALAR_PREALLOC_START || v > SCALAR_PREALLOC_END)
+            return make_value(val);
+
+      return internal::values(v);
   }
 
   // This one does not anything special but it is nice to have it for

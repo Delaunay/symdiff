@@ -65,14 +65,16 @@ int main(){
                LLVMGen::run(fun, ctx, f);
 
     outs() << "We just constructed this LLVM module:\n\n" << *m;
-    outs() << "\n\nRunning my_fun: \n";
+    outs() << "\n\nRunning my_fun: " << fun->arg_size() << "\n";
     outs().flush();
 
     ///*
-    GenericValue arg1;    arg1.DoubleVal = 1;
-    GenericValue arg2;    arg2.DoubleVal = 2;
+    std::vector<GenericValue> args(fun->arg_size());
 
-    std::vector<GenericValue> args = {arg1, arg2};
+    for(std::size_t i = 0; i < fun->arg_size(); ++i){
+        GenericValue arg;    arg.DoubleVal = i;
+        args.push_back(arg);
+    }
 
     //
     //  Create Execution Engine
@@ -80,6 +82,7 @@ int main(){
     ExecutionEngine* EE = EngineBuilder(std::move(Owner)).create();
     // Assertion failed: Index < Length && "Invalid index!", file C:\Users\newton\source\llvm\include\llvm/ADT/ArrayRef.h, line 186
     // Used to work on linux
+    // Argument size not updated by LLVM. This behavior is odd
     GenericValue gv = EE->runFunction(fun, args);
 
     //outs() << "Result: " << gv.FloatVal   << " \t" << 18 << "\n";

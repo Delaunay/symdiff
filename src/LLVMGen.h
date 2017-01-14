@@ -1,12 +1,16 @@
 #ifndef SYMDIFF_INTERNAL_LLVM_HEADER_
 #define SYMDIFF_INTERNAL_LLVM_HEADER_
 
-#define SYMDIFF_LLVM 1
+//#define SYMDIFF_LLVM
 #ifdef SYMDIFF_LLVM
+
+#include <cassert>
 
 #include "Builder.h"
 #include "Nodes.h"
 #include "Context.h"
+
+#include <iostream>
 
 // LLVM HEADER
 #include "llvm/IR/IRBuilder.h"
@@ -29,6 +33,8 @@ class LLVMGen: public Visitor
        ctx(env), fun(f), body(llvm::BasicBlock::Create(ctx, "fun_body", fun)),
        builder(body)
     {
+        assert(fun != nullptr && "fun cant be null");
+
         // Generate code
         dispatch(expr);
 
@@ -47,8 +53,12 @@ class LLVMGen: public Visitor
     }
 
     void placeholder(NodeType expr){
+        // This does not work as LLVM does not update params size
+        // The generated code looks fine but it fails to eval
         Placeholder* p = to_placeholder(expr);
-        result = new llvm::Argument(llvm::Type::getDoubleTy(ctx), p->name, fun);
+        auto arg = new llvm::Argument(llvm::Type::getDoubleTy(ctx), p->name, fun);
+        result = arg;
+        args.push_back(arg);
     }
 
     void value(NodeType expr){
@@ -101,7 +111,7 @@ private:
     llvm::IRBuilder<>  builder;
 
     llvm::Value* result{nullptr};
-#undef LLVM_DOUBLE
+    std::vector<llvm::Argument*> args; // not used
 };
 
 }
