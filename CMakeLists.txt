@@ -32,19 +32,22 @@ OPTION(BUILD_BENCHMARK      "Build Benchmarks"   OFF)
 OPTION(BUILD_DOCUMENTATION  "Build docs"         OFF)
 OPTION(BUILD_DOXYGEN        "Build Doxygen docs" OFF)
 OPTION(BUILD_SPHINX         "Build Sphinx docs"  OFF)
+OPTION(BUILD_UI             "Build UI"           OFF)
 
 # Binary/pre-compiled Dependencies
 # ====================================
 
-# Add SFML cmake script
-LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/dependencies/SFML/cmake/Modules")
-# Where SFML should be
-SET(SFML_ROOT "${CMAKE_SOURCE_DIR}/dependencies/SFML/")
-# Find SFML
-FIND_PACKAGE(SFML 2 COMPONENTS graphics window system)
-
-SET(Git_EXECUTABLE "C:/Program Files (x86)/Git/bin/")
 FIND_PACKAGE(Git)
+
+IF(${BUILD_UI})
+    # Add SFML cmake script
+    LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/dependencies/SFML/cmake/Modules")
+    # Where SFML should be
+    SET(SFML_ROOT "${CMAKE_SOURCE_DIR}/dependencies/SFML/")
+    # Find SFML
+    FIND_PACKAGE(SFML 2 COMPONENTS graphics window system)
+ENDIF()
+
 
 IF(${USE_LLVM_IR})
     # you need that variable to be present

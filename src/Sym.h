@@ -2,7 +2,6 @@
 #define SYMDIFF_API_SYM_HEADER_
 
 #include <memory>
-
 #include "Context.h"
 
 namespace symdiff{
@@ -29,18 +28,16 @@ public:
     Sym deep_copy();
     std::ostream& pretty_print(std::ostream& out);
 
-    double svm_eval  (const NameContext& ctx);
-    double rvm_eval  (const NameContext& ctx);
-    double full_eval (const NameContext& ctx);
+    double svm_eval (const NameContext& ctx);
+    double rvm_eval (const NameContext& ctx);
+    double full_eval(const NameContext& ctx);
     Sym partial_eval(const NameContext& ctx);
     Sym subst       (const NameContext& ctx);
     Sym derivate    (const std::string& name);
 
-    #ifdef SYMDIFF_LLVM
-    Node llvm_gen(llvm::Function* f, llvm::LLVMContext& ctx, Node expr){
-        return LLVMGen::run(f, ctx, expr);
-    }
-    #endif
+#ifdef SYMDIFF_LLVM
+    Sym llvm_gen(llvm::Function* f, llvm::LLVMContext& ctx);
+#endif
 
     static Sym make_var(double x);
     static Sym make_var(const std::string& name);

@@ -46,9 +46,6 @@ enum class TypeID: std::size_t{
  *  I think shared pointer allow us to reuse current node. Moreover, I need to
  *  look into smart evaluator that would compute nodes only once and cache the results.
  *
- *  A lot of libraries explicitly create a edge class. I am not sure why.
- *  it is necesary for Tensor diff ?
- *
  */
 namespace internal{
 

@@ -9,6 +9,7 @@
 #include "PartialEval.h"
 #include "Substitution.h"
 #include "Derivate.h"
+#include "LLVMGen.h"
 
 #include "Equiv.h"
 
@@ -34,7 +35,13 @@ double Sym::rvm_eval    (const NameContext& ctx)   {    return RegisterVM::run(c
 double Sym::full_eval   (const NameContext& ctx)   {    return FullEval::run(ctx, _expr);       }
 Sym    Sym::partial_eval(const NameContext& ctx)   {    return PartialEval::run(ctx, _expr);    }
 Sym    Sym::subst       (const NameContext& ctx)   {    return Substitution::run(ctx, _expr);   }
-Sym    Sym::derivate    (const std::string& name)   {   return Derivate::run(name, _expr); }
+Sym    Sym::derivate    (const std::string& name)  {    return Derivate::run(name, _expr);      }
+
+#ifdef SYMDIFF_LLVM
+Sym Sym::llvm_gen(llvm::Function* f, llvm::LLVMContext& ctx){
+    return LLVMGen::run(f, ctx, _expr);
+}
+#endif
 
 Sym Sym::make_var(double x)                 {   return Builder::value(x);          }
 Sym Sym::make_var(const std::string& name)  {   return Builder::placeholder(name); }
