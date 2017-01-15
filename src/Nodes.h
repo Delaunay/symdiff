@@ -127,6 +127,7 @@ struct UnaryNode: public internal::NodeImpl{
         internal::NodeImpl(_id), expr(_expr)
     {}
 
+    Node operator[] (std::size_t ) {  return expr;  }
     Node expr;
 };
 
@@ -134,6 +135,13 @@ struct BinaryNode: public internal::NodeImpl{
     BinaryNode(NodeID _id, Node& _lhs, Node& _rhs):
         internal::NodeImpl(_id), lhs(_lhs), rhs(_rhs)
     {}
+
+    Node operator[] (std::size_t idx) const {
+        switch (idx){
+        case 0: return lhs;
+        default: return rhs;
+        }
+    }
 
     Node lhs;
     Node rhs;

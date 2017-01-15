@@ -105,9 +105,13 @@ public:
       return internal::values(v);
   }
 
-      // This one does not anything special but it is nice to have it for
+      // This one does not do anything special but it is nice to have it for
       // consistency
       static Node placeholder(const std::string& name) { return make_placeholder(name); }
+
+    // Abstract
+    static Node minus(Node lhs, Node rhs) { return add (lhs, neg(rhs)); }
+    static Node div  (Node lhs, Node rhs) { return mult(lhs, inv(rhs)); }
 };
 
 void reorder(Node& lhs, Node& rhs){
@@ -115,8 +119,6 @@ void reorder(Node& lhs, Node& rhs){
         std::swap(lhs, rhs);
     }
 }
-
-//#define SYMDIFF_NO_SIMP 1
 
 Node Builder::add (Node lhs, Node rhs){
     reorder(lhs, rhs);

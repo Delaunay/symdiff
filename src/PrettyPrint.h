@@ -67,6 +67,7 @@ struct PrettyPrint: public Visitor
 
     std::ostream& out;
 };
+
 }
 
 #endif

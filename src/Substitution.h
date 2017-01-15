@@ -40,6 +40,7 @@ class Substitution: public DeepCopy
   const NameContext& ctx;
 };
 
+
 }
 
 #endif
