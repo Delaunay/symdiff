@@ -30,7 +30,7 @@ class DeepCopy: public Visitor
         dispatch(lhs);
         Node lhs_expr = result;
         dispatch(rhs);
-        result = pop(lhs_expr, rhs);
+        result = pop(lhs_expr, result);
     }
 
     void unary_operator(NodeType expr, std::function<Node(Node)> pop){
