@@ -45,8 +45,6 @@ namespace symdiff{
 class FullEval: public Visitor
 {
   public:
-
-    // const context, variable immutable
     FullEval(const NameContext& ctx, Node expr):
       ctx(ctx)
     {
@@ -107,13 +105,13 @@ class FullEval: public Visitor
     }
 
     void placeholder(NodeType expr) override{
-      Placeholder* p = to_placeholder(expr);
-      auto v = ctx.at(p->name);
-      result = to_value(v)->value;
+        Placeholder* p = to_placeholder(expr);
+        auto v = ctx.at(p->name);
+        result = to_value(v)->value;
     }
 
-  double result;
-  const NameContext& ctx;
+    double result;
+    const NameContext& ctx;
 };
 
 }

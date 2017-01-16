@@ -36,8 +36,8 @@ class Substitution: public DeepCopy
           result = const_cast<NodeType>(ctx.at(p->name));
     }
 
-  Node result;
-  const NameContext& ctx;
+    Node result;
+    const NameContext& ctx;
 };
 
 

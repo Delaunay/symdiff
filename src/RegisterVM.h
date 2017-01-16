@@ -64,6 +64,7 @@ struct RInstruction{
 
 typedef std::vector<RInstruction> RInstructions;
 
+inline
 std::string to_string(ROpCode o){
     switch(o){
     #define SYMDIFF_NODES_DEFINITIONS
@@ -79,6 +80,7 @@ std::string to_string(ROpCode o){
     return "ERROR";
 }
 
+inline
 std::ostream& print(std::ostream& out, const RInstruction& i){
     out << to_string(i.op);
 
@@ -90,6 +92,7 @@ std::ostream& print(std::ostream& out, const RInstruction& i){
     return out << " " << i.r1 << ", " << i.r2 << ", " << i.r3;
 }
 
+inline
 std::ostream& print(std::ostream& out, const RInstructions& s){
     for(const auto& i: s){
         print(out, i) << "\n";

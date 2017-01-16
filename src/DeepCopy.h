@@ -83,7 +83,7 @@ class DeepCopy: public Visitor
         result = Builder::placeholder(p->name);
     }
 
-  Node result;
+    Node result;
 };
 
 }

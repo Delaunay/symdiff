@@ -44,6 +44,7 @@ struct SInstruction{
 
 typedef std::vector<SInstruction> SInstructions;
 
+inline
 std::string to_string(SOpCode o){
     switch(o){
     #define SYMDIFF_NODES_DEFINITIONS
@@ -59,6 +60,7 @@ std::string to_string(SOpCode o){
     return "ERROR";
 }
 
+inline
 std::ostream& print(std::ostream& out, const SInstruction& i){
     out << to_string(i.op);
 
@@ -69,6 +71,7 @@ std::ostream& print(std::ostream& out, const SInstruction& i){
     return out;
 }
 
+inline
 std::ostream& print(std::ostream& out, const SInstructions& s){
     for(const auto& i: s){
         print(out, i) << "\n";

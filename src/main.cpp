@@ -1,5 +1,9 @@
 #include "Sym.h"
 #include <iostream>
+#include <cstdlib>
+
+#include "StackVM.h"
+#include "RegisterVM.h"
 
 using namespace symdiff;
 

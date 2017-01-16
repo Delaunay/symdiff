@@ -90,4 +90,6 @@ if(NOT "${rev_hash_cached}" MATCHES "${rev_hash}"
 
   set(rev_hash_cached "${rev_hash}" CACHE INTERNAL "Cached commit-hash")
   set(rev_branch_cached "${rev_branch}" CACHE INTERNAL "Cached branch name")
+else()
+ message(STATUS "Configuration file `version.h` not updated")
 endif()

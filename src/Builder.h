@@ -27,8 +27,9 @@ Node two();
 
 namespace internal {
     const int SCALAR_PREALLOC_START = -100;
-    const int SCALAR_PREALLOC_END   = 100;
+    const int SCALAR_PREALLOC_END   =  100;
 
+    inline
     std::vector<Node> _gen_values(int s = SCALAR_PREALLOC_START, int e = SCALAR_PREALLOC_END){
         std::vector<Node> v(e - s + 1);
         for(int i = 0; i < (e - s) + 1; ++i)
@@ -37,13 +38,16 @@ namespace internal {
     }
 
     // Pre allocate common values
+    inline
     Node values(int i){
         static std::vector<Node> val = _gen_values();
         return val[i - SCALAR_PREALLOC_START];
     }
 
     // Get pointer to value zero
+    inline
     NodeRef zero_ptr(){   static NodeImpl* zp = zero().get();  return zp;  }
+    inline
     NodeRef one_ptr() {   static NodeImpl* zp = one().get();   return zp;  }
 }
 
@@ -52,8 +56,8 @@ inline Node zero()     {    return internal::values( 0);   }
 inline Node one()      {    return internal::values( 1);   }
 inline Node two()      {    return internal::values( 2);   }
 
-bool is_null(Node& ptr)          {    return ptr.get() == internal::zero_ptr();         }
-bool is_one(Node&  ptr)          {    return ptr.get() == internal::one_ptr();          }
+inline bool is_null(Node& ptr)          {    return ptr.get() == internal::zero_ptr();         }
+inline bool is_one(Node&  ptr)          {    return ptr.get() == internal::one_ptr();          }
 
 class Operator
 {
@@ -78,23 +82,24 @@ public:
 class Builder{
 public:
 
-  // Helpers: node builder
-  // Those implement basic optimization (constant folding and trivial simplification)
-  // You probably always want to use them.
+    // Helpers: node builder
+    // Those implement basic optimization (constant folding and trivial simplification)
+    // You probably always want to use them.
 
     // Binary
     static Node add (Node lhs, Node rhs);
     static Node mult(Node lhs, Node rhs);
     static Node pow (Node lhs, Node rhs);
-//  static Node div (Node lhs, Node rhs);
-//  static Node sub (Node lhs, Node rhs);
+    // Abstract
+    static Node minus(Node lhs, Node rhs) { return add (lhs, neg(rhs)); }
+    static Node div  (Node lhs, Node rhs) { return mult(lhs, inv(rhs)); }
 
     // Unary
     static Node inv(Node expr);
     static Node neg(Node expr);
 
-  // Leafs
-  // Avoid allocating memory for commonly used values (0, 1, etc...)
+    // Leafs
+    // Avoid allocating memory for commonly used values (0, 1, etc...)
     static Node value(double val){
         int v = int(val);
 
@@ -103,23 +108,21 @@ public:
             return make_value(val);
 
       return internal::values(v);
-  }
+    }
 
-      // This one does not do anything special but it is nice to have it for
-      // consistency
-      static Node placeholder(const std::string& name) { return make_placeholder(name); }
-
-    // Abstract
-    static Node minus(Node lhs, Node rhs) { return add (lhs, neg(rhs)); }
-    static Node div  (Node lhs, Node rhs) { return mult(lhs, inv(rhs)); }
+    // This one does not do anything special but it is nice to have it for
+    // consistency
+    static Node placeholder(const std::string& name) { return make_placeholder(name); }
 };
 
+inline
 void reorder(Node& lhs, Node& rhs){
     if (lhs->id > rhs->id){
         std::swap(lhs, rhs);
     }
 }
 
+inline
 Node Builder::add (Node lhs, Node rhs){
     reorder(lhs, rhs);
 
@@ -142,6 +145,23 @@ Node Builder::add (Node lhs, Node rhs){
 
     // Worst Unbalanced tree : (a + (b + (c + (d + (e + (f + g) : Depth = 6
     // Best Case             : ((a + b) + c) + (d + (f + g))    : Depth = 3
+
+    // After reflexion an unbalanced tree might generate more cache friendly
+    // VM instructions
+    // EX: 2 * 2 * 2 * 2
+    // Balanced takes less memmory
+
+    /*  Balanced        Unbalanced
+     * -----------------------------
+     *   push 2         push 2
+     *   push 2         push 2
+     *   mult           push 2
+     *   push 2         push 2
+     *   push 2         mult
+     *   mult           mult
+     *   mult           mult
+     **********************************/
+
 
     // AddFlatten            : (a + b + c + d + f + g)          : Depth = 1
     // In that case we will have to do 6 add operation as in the worst case
@@ -182,11 +202,11 @@ Node Builder::add (Node lhs, Node rhs){
 #endif
     return make_add(lhs, rhs);
 }
-
+inline
 Node Builder::pow (Node lhs, Node rhs){
     return make_pow(lhs, rhs);
 }
-
+inline
 Node Builder::mult (Node lhs, Node rhs){
     reorder(lhs, rhs);
 
@@ -240,7 +260,7 @@ Node Builder::mult (Node lhs, Node rhs){
 //Node Builder::sub (Node lhs, Node rhs){
 //    return make_sub(lhs, rhs);
 //}
-
+inline
 Node Builder::inv(Node expr){
     // desactive simplification for patterns
     //if (expr->is_pattern())
@@ -257,7 +277,7 @@ Node Builder::inv(Node expr){
 #endif
     return make_inv(expr);
 }
-
+inline
 Node Builder::neg(Node expr){
     // desactive simplification for patterns
     //if (expr->is_pattern())

@@ -10,6 +10,7 @@ namespace internal{
 struct NodeImpl;
 }
 
+
 // Public API
 class Sym{
 public:
@@ -23,7 +24,8 @@ public:
     Sym  operator- (double a);
     Sym  operator/ (double a);
     Sym  operator* (double a);
-    bool operator= (Sym a);
+    bool operator==(Sym a);
+    Sym  operator= (Sym a);
 
     Sym deep_copy();
     std::ostream& pretty_print(std::ostream& out);
@@ -44,6 +46,8 @@ public:
 
     // needed because of the Context
     operator Node() const { return _expr; }
+
+    Node to_node() {    return _expr; }
 
 private:
     Node _expr;

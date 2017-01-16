@@ -11,7 +11,7 @@ namespace symdiff{
 /*
  *  Equality checking
  */
-
+inline
 bool eq_sym(const Node& ca, const Node& cb){
 
     if (ca->id == cb->id){
@@ -52,10 +52,12 @@ bool eq_sym(const Node& ca, const Node& cb){
     return false;
 }
 
+inline
 bool eq_mem(const Node& ca, const Node& cb){
     return ca.get() == cb.get();
 }
 
+inline
 bool equiv(const Node& ca, const Node& cb){
     return eq_mem(ca, cb) || eq_sym(ca, cb);
 }

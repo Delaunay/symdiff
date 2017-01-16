@@ -1,19 +1,21 @@
 #include "Sym.h"
 #include "Builder.h"
 
+#include "Equiv.h"
+
 #include "DeepCopy.h"
 #include "PrettyPrint.h"
-#include "StackVM.h"
-#include "RegisterVM.h"
 #include "FullEval.h"
 #include "PartialEval.h"
 #include "Substitution.h"
 #include "Derivate.h"
 #include "LLVMGen.h"
 
-#include "Equiv.h"
+#include "StackVM.h"
+#include "RegisterVM.h"
 
 namespace symdiff{
+
 
 Sym Sym::operator+ (Sym a) {    return Builder::add  (_expr, a._expr);    }
 Sym Sym::operator- (Sym a) {    return Builder::minus(_expr, a._expr);    }
@@ -25,7 +27,11 @@ Sym Sym::operator- (double a) {    return Builder::minus(_expr, Builder::value(a
 Sym Sym::operator/ (double a) {    return Builder::div  (_expr, Builder::value(a));    }
 Sym Sym::operator* (double a) {    return Builder::mult (_expr, Builder::value(a));    }
 
-bool Sym::operator= (Sym a) {    return equiv(_expr, a._expr);    }
+bool Sym::operator==(Sym a) {    return equiv(_expr, a._expr);    }
+Sym  Sym::operator= (Sym a) {
+    _expr = a._expr;
+    return *this;
+}
 
 Sym           Sym::deep_copy   ()                  {    return DeepCopy::run(_expr);            }
 std::ostream& Sym::pretty_print(std::ostream& out) {    return PrettyPrint::run(out, _expr);    }

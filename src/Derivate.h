@@ -16,11 +16,11 @@ class Derivate: public Visitor
     Derivate(const std::string& name, NodeType expr):
       result(zero()), variable(name)
     {
-      dispatch(expr);
+        dispatch(expr);
     }
 
-    static Node run(const std::string& ctx, const NodeType expr){
-      return Derivate(ctx, expr).result;
+    static Node run(const std::string& ctx, NodeType expr){
+        return Derivate(ctx, expr).result;
     }
 
     void add(NodeType v) override {
@@ -61,12 +61,12 @@ class Derivate: public Visitor
 
     // TODO
     void pow(NodeType v) override {
-      result = zero();
+        result = zero();
     }
 
     void neg(NodeType expr) override {
-      dispatch(expr);
-      result = Builder::neg(result);
+        dispatch(expr);
+        result = Builder::neg(result);
     }
 
     // TODO
@@ -75,20 +75,20 @@ class Derivate: public Visitor
     }
 
     void value(NodeType) override {
-      result = zero();
+        result = zero();
     }
 
     void placeholder(NodeType expr) override {
-      Placeholder* p = to_placeholder(expr);
+        Placeholder* p = to_placeholder(expr);
 
-      if (variable == p->name)
-          result = one();
-      else
-          result = zero();
+        if (variable == p->name)
+            result = one();
+        else
+            result = zero();
     }
 
-  Node result;
-  const std::string& variable;
+    Node result;
+    const std::string& variable;
 };
 
 }

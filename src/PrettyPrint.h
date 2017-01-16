@@ -8,6 +8,8 @@
 #include <string>
 
 namespace symdiff{
+
+
 struct PrettyPrint: public Visitor
 {
     PrettyPrint(std::ostream& out):
@@ -30,7 +32,7 @@ struct PrettyPrint: public Visitor
 #undef SYMDIFF_NODES_DEFINITIONS
 
     // Binary node printing
-    void binary_node(NodeType n, const std::string& repr) {
+    virtual void binary_node(NodeType n, const std::string& repr) {
         BinaryNode* b = to_binary(n);
 
         bool lhs_precedence = !is_leaf(b->lhs) && b->lhs->id < n->id;
@@ -48,7 +50,7 @@ struct PrettyPrint: public Visitor
     }
 
     // Unary Node printing
-    void unary_node(NodeType n, const std::string& repr) {
+    virtual void unary_node(NodeType n, const std::string& repr) {
         UnaryNode* u = to_unary(n);
         out << repr << "(";
             this->dispatch(u->expr);
@@ -66,6 +68,29 @@ struct PrettyPrint: public Visitor
     }
 
     std::ostream& out;
+};
+
+struct PolishPrint: public PrettyPrint
+{
+    PolishPrint(std::ostream& out):
+        PrettyPrint(out)
+    {}
+
+    static std::ostream& run(std::ostream& out, Node n){
+        PolishPrint(out).dispatch(n);
+        return out;
+    }
+
+    void binary_node(NodeType n, const std::string& repr) override {
+        BinaryNode* b = to_binary(n);
+        out << "(" << repr << " "; dispatch(b->lhs); out << " "; dispatch(b->rhs); out << ")";
+    }
+
+    void unary_node(NodeType n, const std::string& repr) override {
+        UnaryNode* u = to_unary(n);
+        out << "(" << repr << " "; dispatch(u->expr); out << ")";
+    }
+
 };
 
 }

@@ -8,6 +8,7 @@ IF(${CMAKE_BUILD_TYPE} MATCHES "Debug")
     MESSAGE(STATUS "Building Debug Version")
 ELSE()
     MESSAGE(STATUS "Building Release Version")
+    ADD_COMPILE_OPTIONS(/Ox)
 ENDIF()
 
 # specify where compiled files must go
@@ -19,8 +20,6 @@ SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 SET(${CXX_STANDARD_REQUIRED} ON)
-
-# ADD_COMPILE_OPTIONS(-Wall -pedantic -fno-rtti)
 
 # Project's Options
 # ====================================
@@ -98,6 +97,11 @@ IF(BUILD_EXAMPLES)
     MESSAGE(STATUS "Building examples")
     ADD_SUBDIRECTORY(examples)
 ENDIF(BUILD_EXAMPLES)
+
+IF(BUILD_BENCHMARK)
+    MESSAGE(STATUS "Building Benchmarks")
+    ADD_SUBDIRECTORY(bench)
+ENDIF(BUILD_BENCHMARK)
 
 
 # cmake shortcut
