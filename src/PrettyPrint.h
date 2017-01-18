@@ -52,9 +52,14 @@ struct PrettyPrint: public Visitor
     // Unary Node printing
     virtual void unary_node(NodeType n, const std::string& repr) {
         UnaryNode* u = to_unary(n);
+
         out << repr << "(";
             this->dispatch(u->expr);
         out << ")";
+    }
+
+    void catch_all(NodeType n) override{
+        out << "_";
     }
 
     void value(NodeType n) override{

@@ -27,6 +27,8 @@ public:
     bool operator==(Sym a);
     Sym  operator= (Sym a);
 
+    bool match(Sym pattern);
+
     Sym deep_copy();
     std::ostream& pretty_print(std::ostream& out);
 
@@ -43,6 +45,7 @@ public:
 
     static Sym make_var(double x);
     static Sym make_var(const std::string& name);
+    static Sym make_any();
 
     // needed because of the Context
     operator Node() const { return _expr; }
@@ -59,6 +62,7 @@ private:
 
 inline Sym make_var(double x)                  {   return Sym::make_var(x);   }
 inline Sym make_var(const std::string& name)   {   return Sym::make_var(name);}
+inline Sym make_any()                          {   return Sym::make_any();}
 
 inline
 std::ostream& operator<<(std::ostream& out, Sym& a){    return a.pretty_print(out); }

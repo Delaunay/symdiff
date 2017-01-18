@@ -38,7 +38,8 @@ template<typename T>
 std::string to_string(T num, std::size_t trunc = 4, std::size_t width = 2){
     // %[flags][width][.precision][length]
 
-    std::string format = "% #" + std::to_string(width) + "." + std::to_string(trunc) + "f";
+    std::string format = "% #" + std::to_string(width) +
+                           "." + std::to_string(trunc) + "f";
     char c[] = "                                  ";
     sprintf(c, format.c_str(), num);
     return std::string(c);
@@ -66,8 +67,8 @@ int main()
     auto bl  = make_balanced_expr(2, depth);
     auto ubl = make_unbalanced_expr(2, depth);
 
-    int tries = 100;
-    int rep   = 100;
+    int tries = 1000;
+    int rep   = 1000;
 
     bench::BenchTimer bpartial; BENCH(bpartial, tries, rep, bl.partial_eval(env));
     bench::BenchTimer bfull;    BENCH(bfull, tries, rep, bl.full_eval(env));
@@ -130,7 +131,8 @@ int main()
     std::cout << "(RVM) E  : " << uervm << std::endl;
 
     std::cout << std::string(80, '-') << std::endl;
-
+    std::cout << "Unbalanced / Balanced" << std::endl;
+    std::cout << std::string(80, '-') << std::endl;
     std::cout << "Partial  : " << upartial / bpartial << std::endl;
     std::cout << "Full     : " << ufull / bfull << std::endl;
     std::cout << "(SVM) C+E: " << usvm  / bsvm  << std::endl;

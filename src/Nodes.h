@@ -23,7 +23,8 @@ enum class NodeID: std::size_t{
         #define DEFINE_UNARY_NODE(__type__, __str__, __repr__)  __str__,
         #define DEFINE_BINARY_NODE(__type__, __str__, __repr__)  __str__,
         #include "Nodes.def"
-        Size
+        Size,
+        Any
     #undef SYMDIFF_NODES_DEFINITIONS
 };
 
@@ -83,23 +84,26 @@ struct Visitor
             #define SYMDIFF_NODES_DEFINITIONS
                 #define DEFINE_LEAF_NODE(__type__, __str__, __repr__)  \
                         case NodeID::__str__: \
-                            __str__(n); break;\
+                            __str__(n); return;\
 
                 #define DEFINE_UNARY_NODE(__type__, __str__, __repr__) \
                         case NodeID::__str__: \
-                            __str__(n); break;\
+                            __str__(n); return;\
 
                 #define DEFINE_BINARY_NODE(__type__, __str__, __repr__)\
                         case NodeID::__str__: \
-                            __str__(n); break;\
+                            __str__(n); return;\
 
                 #include "../src/Nodes.def"
             #undef SYMDIFF_NODES_DEFINITIONS
             case NodeID::Size:{
                 assert(true && "unreachable");
-            }
+            } 
         }
+        catch_all(n);
     }
+
+    virtual void catch_all(NodeType) {}
 
     #define SYMDIFF_NODES_DEFINITIONS
         #define DEFINE_LEAF_NODE(__type__, __str__, __repr__)   virtual void __str__ (NodeType n) = 0;

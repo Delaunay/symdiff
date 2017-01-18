@@ -27,6 +27,7 @@ SET(SRC_LIST
     Sym.cpp
     StackVM.h
     RegisterVM.h
+    Patterns.h
 )
 
 SET(${CXX_STANDARD_REQUIRED} ON)

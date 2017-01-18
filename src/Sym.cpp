@@ -14,6 +14,8 @@
 #include "StackVM.h"
 #include "RegisterVM.h"
 
+#include "Patterns.h"
+
 namespace symdiff{
 
 
@@ -27,7 +29,8 @@ Sym Sym::operator- (double a) {    return Builder::minus(_expr, Builder::value(a
 Sym Sym::operator/ (double a) {    return Builder::div  (_expr, Builder::value(a));    }
 Sym Sym::operator* (double a) {    return Builder::mult (_expr, Builder::value(a));    }
 
-bool Sym::operator==(Sym a) {    return equiv(_expr, a._expr);    }
+bool Sym::match(Sym pattern){   return PatternMatcher::run(_expr, pattern);   }
+bool Sym::operator==(Sym a) {   return equiv(_expr, a._expr);    }
 Sym  Sym::operator= (Sym a) {
     _expr = a._expr;
     return *this;
@@ -51,4 +54,5 @@ Sym Sym::llvm_gen(llvm::Function* f, llvm::LLVMContext& ctx){
 
 Sym Sym::make_var(double x)                 {   return Builder::value(x);          }
 Sym Sym::make_var(const std::string& name)  {   return Builder::placeholder(name); }
+Sym Sym::make_any()  {   return make_pattern_any(); }
 }
