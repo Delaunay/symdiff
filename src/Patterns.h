@@ -9,13 +9,13 @@ namespace symdiff
 
 /*
  *  A pattern is a regular symdiff expression
- *  but a new node can be used; "Any" which match
- *  with all existing nodes when Any is matched
+ *  but a new node can be used; "Any"
+ *  when Any is matched
  *  it saves the node it was matched too
  *
  *  match ((2  + y) * (3 + x)) (_ * _)
- *      first  Any => (2 + y)
- *      Second Any => (3 + x)
+ *      first  Any ref to (2 + y)
+ *      Second Any ref to (3 + x)
  */
 inline Node make_pattern_any(){
     return std::make_shared<UnaryNode>(NodeID::Any, zero());
@@ -33,8 +33,13 @@ struct PatternMatcher
     static bool run(Node expr, Node pattern, int max_depth = 20){
         return PatternMatcher(pattern, max_depth).match(expr, pattern, 0);
     }
-
-    bool match(const Node& ca, const Node& cb, int depth){
+    /*
+     * ca   : expression
+     * cb   : Pattern
+     * depth: times we restarted looking for the pattern in the tree leaves
+     * pleaf: are we checking a leaf of pattern
+     */
+    bool match(const Node& ca, const Node& cb, int depth, bool pleaf=false){
         if (depth > max_depth)
             return false;
 
@@ -49,11 +54,31 @@ struct PatternMatcher
             switch(ca->id){
                 // Leaf
                 case NodeID::placeholder:
+                {
+                    /*/ Seek'n replace
+                    if (to_placeholder(ca)->name == to_placeholder(cb)->name){
+                        if (!pleaf) ca = replace_expr;
+                        return true;
+                    }
+                    i
+                    return false;
+                    //*/
+
                     return to_placeholder(ca)->name == to_placeholder(cb)->name;
+                }
 
                 case NodeID::value:
-                    return std::abs(to_value(ca)->value - to_value(cb)->value) < 1e-12;
+                {
+                    /*/ Seek'n replace
+                    if (std::abs(to_value(ca)->value - to_value(cb)->value) < 1e-12){
+                        if (!pleaf) ca = replace_expr;
+                        return true;
+                    }
+                    return false;
+                    //*/
 
+                    return std::abs(to_value(ca)->value - to_value(cb)->value) < 1e-12;
+                }
                 // Unary
         #define SYMDIFF_NODES_DEFINITIONS
             #define DEFINE_UNARY_NODE(__type__, __str__, __repr__)\
@@ -61,9 +86,23 @@ struct PatternMatcher
             #include "../src/Nodes.def"
         #undef SYMDIFF_NODES_DEFINITIONS
                 {
-                    if (!match(to_unary(ca)->expr, to_unary(cb)->expr, depth))
-                        return match(to_unary(ca)->expr, opat, depth + 1);
+                    /*/ Seek'n replace
+                    if (match(to_unary(ca)->expr, to_unary(cb)->expr, depth, true)){
+                        if (!pleaf) ca = replace_expr;
+                        return true;
+                    }
+                    else if (match(to_unary(ca)->expr, opat, depth + 1, false)){
+                        to_unary(ca)->expr = replace_expr;
+                        return true;
+                    }
+                    return false;
+                    //*/
+
+                    if (!match(to_unary(ca)->expr, to_unary(cb)->expr, depth, true))
+                        return match(to_unary(ca)->expr, opat, depth + 1, false);
                     return true;
+
+                    // depth 1
                     // return match(to_unary(ca)->expr, to_unary(cb)->expr);
                 }
 
@@ -76,9 +115,26 @@ struct PatternMatcher
                 {
                     BinaryNode* na = to_binary(ca);
                     BinaryNode* nb = to_binary(cb);
-                    if (!match(na->lhs, nb->lhs, depth) && match(na->rhs, nb->rhs, depth))
-                        return match(na->lhs, opat, depth + 1) ||
-                               match(na->rhs, opat, depth + 1);
+
+                    /*/ Seek'n replace
+                    if (match(na->lhs, nb->lhs, depth) && match(na->rhs, nb->rhs, depth, true)){
+                        if (!pleaf) ca = replace_expr;
+                        return true;
+                    }
+                    else if (match(na->lhs, opat, depth + 1, false)){
+                        na->lhs = replace_expr;
+                        return true;
+                    }
+                    else if (match(na->rhs, opat, depth + 1, false)){
+                        na->rhs = replace_expr;
+                        return true;
+                    }
+                    return false;
+                    //*/
+
+                    if (!match(na->lhs, nb->lhs, depth) && match(na->rhs, nb->rhs, depth, true))
+                        return match(na->lhs, opat, depth + 1, false) ||
+                               match(na->rhs, opat, depth + 1, false);
                     return true;
                     // return match(na->lhs, nb->lhs) && match(na->rhs, nb->rhs);
                 }
@@ -92,6 +148,7 @@ struct PatternMatcher
     }
 
     Node opat;
+    // Node replace_expr;
     int max_depth;
 };
 
