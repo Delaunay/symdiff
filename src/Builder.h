@@ -30,7 +30,8 @@ namespace internal {
     const int SCALAR_PREALLOC_END   =  100;
 
     inline
-    std::vector<Node> _gen_values(int s = SCALAR_PREALLOC_START, int e = SCALAR_PREALLOC_END){
+    std::vector<Node> _gen_values(int s = SCALAR_PREALLOC_START,
+                                  int e = SCALAR_PREALLOC_END){
         std::vector<Node> v(e - s + 1);
         for(int i = 0; i < (e - s) + 1; ++i)
             v[i] = make_value(s + i);
@@ -113,6 +114,7 @@ public:
     // This one does not do anything special but it is nice to have it for
     // consistency
     static Node placeholder(const std::string& name) { return make_placeholder(name); }
+    static Node cond(Node cond, Node tr, Node fl){ return make_cond(cond, tr, fl); }
 };
 
 inline

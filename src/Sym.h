@@ -58,11 +58,24 @@ private:
     Sym(Node expr):
         _expr(expr)
     {}
+
+    friend Sym  operator+ (double b, Sym a);
+    friend Sym  operator- (double b, Sym a);
+    friend Sym  operator/ (double b, Sym a);
+    friend Sym  operator* (double b, Sym a);
+    friend Sym cond(Sym cond, Sym tr, Sym fl);
 };
+
+
+Sym  operator+ (double b, Sym a);
+Sym  operator- (double b, Sym a);
+Sym  operator/ (double b, Sym a);
+Sym  operator* (double b, Sym a);
 
 inline Sym make_var(double x)                  {   return Sym::make_var(x);   }
 inline Sym make_var(const std::string& name)   {   return Sym::make_var(name);}
 inline Sym make_any()                          {   return Sym::make_any();}
+Sym cond(Sym cond, Sym tr, Sym fl);
 
 inline
 std::ostream& operator<<(std::ostream& out, Sym& a){    return a.pretty_print(out); }

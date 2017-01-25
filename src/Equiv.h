@@ -44,6 +44,15 @@ bool eq_sym(const Node& ca, const Node& cb){
                 BinaryNode* nb = to_binary(cb);
                 return eq_sym(na->lhs, nb->lhs) && eq_sym(na->rhs, nb->rhs);
             }
+
+            case NodeID::cond:
+            {
+                Cond* ca = reinterpret_cast<Cond*>(ca);
+                Cond* cb = reinterpret_cast<Cond*>(cb);
+                return eq_sym(ca->cond() , cb->cond())  &&
+                       eq_sym(ca->texpr(), cb->texpr()) &&
+                       eq_sym(ca->fexpr(), cb->fexpr());
+            }
         case NodeID::Size:
             assert("unreachable");
         }

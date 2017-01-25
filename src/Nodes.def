@@ -71,13 +71,13 @@ DEFINE_LEAF_NODE(Value,       value,       v)
 //DEFINE_NNARY_NODE(Mult,   mult,   *)
 
 DEFINE_BINARY_NODE_SEC(Binary, binary, binary)
-DEFINE_BINARY_NODE(Add,    add ,   +)
-DEFINE_BINARY_NODE(Mult,   mult,   *)
-DEFINE_BINARY_NODE(Pow,    pow ,   ^)
+DEFINE_BINARY_NODE(BinaryNode,    add ,   +)
+DEFINE_BINARY_NODE(BinaryNode,   mult,   *)
+DEFINE_BINARY_NODE(BinaryNode,    pow ,   ^)
 
-DEFINE_UNARY_NODE_SEC(Unary, unary, unary)
+DEFINE_UNARY_NODE_SEC(UnaryNode, unary, unary)
 //DEFINE_UNARY_NODE(Sub,   sub,   -)
-DEFINE_UNARY_NODE(Neg,   neg,   -)
+DEFINE_UNARY_NODE(UnaryNode,   neg,   -)
 //DEFINE_UNARY_NODE(Exp,   exp,   e)
 //DEFINE_UNARY_NODE(Ln,    ln,    ln)
 
@@ -85,22 +85,26 @@ DEFINE_UNARY_NODE(Neg,   neg,   -)
 //DEFINE_UNARY_NODE(Sin,   sin,   sin)
 //DEFINE_UNARY_NODE(Tan,   tan,   tan)
 // must be last
-DEFINE_UNARY_NODE(Inv,   inv,   1/)
+DEFINE_UNARY_NODE(UnaryNode,   inv,   1/)
+
+DEFINE_NNARY_NODE(Cond,  cond, cond)
 
 // Virtual Machine Operation
 // Those node do not exist in the language
-
 // Stack VM
 DEFINE_SVM_NODE(Push, push, push)
 DEFINE_SVM_NODE(Lookup, lookup, lookup)
+DEFINE_SVM_NODE(Branch, branch, branch)
 
 // Register VM
 DEFINE_RVM_NODE(Load, load, load)
 DEFINE_RVM_NODE(Move, move, move)
 DEFINE_RVM_NODE(Lookup, lookup, lookup)
+DEFINE_RVM_NODE(Branch, branch, branch)
 
 #undef DEFINE_LEAF_NODE
 #undef DEFINE_UNARY_NODE
 #undef DEFINE_BINARY_NODE
+#undef DEFINE_NNARY_NODE
 #undef DEFINE_SVM_NODE
 #undef DEFINE_RVM_NODE

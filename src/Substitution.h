@@ -22,15 +22,13 @@ class Substitution: public DeepCopy
         return Substitution(ctx, expr).result;
     }
 
-    void value(NodeType expr) override {
-        result = expr;
+    void value(Value* expr) override {
+        result = make_value(expr->value);
     }
 
-    void placeholder(NodeType expr) override {
-        Placeholder* p = to_placeholder(expr);
-
+    void placeholder(Placeholder* p) override {
         if (ctx.count(p->name) == 0)
-            result = expr;
+            result = make_placeholder(p->name);
 
         else // Nodes are immutable
           result = const_cast<NodeType>(ctx.at(p->name));

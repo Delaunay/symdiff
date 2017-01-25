@@ -57,23 +57,20 @@ class LLVMGen: public Visitor
         return f;
     }
 
-    void placeholder(NodeType expr){
+    void placeholder(Placeholder* p){
         // This does not work as LLVM does not update params size
         // The generated code looks fine but it fails to eval
-        Placeholder* p = to_placeholder(expr);
         auto arg = new llvm::Argument(llvm::Type::getDoubleTy(ctx), p->name, fun);
         result = arg;
         args.push_back(arg);
     }
 
-    void value(NodeType expr){
-        double v = to_value(expr)->value;
+    void value(Value* s){
+        double v = s->value;
         result = LLVM_DOUBLE(v);
     }
 
-    void add(NodeType expr){
-        BinaryNode* b = to_binary(expr);
-
+    void add(BinaryNode* expr){
         dispatch(b->lhs);
         llvm::Value* lhs = result;
 
@@ -83,9 +80,7 @@ class LLVMGen: public Visitor
         result = builder.CreateFAdd(lhs, rhs);
     }
 
-    void mult(NodeType expr){
-        BinaryNode* b = to_binary(expr);
-
+    void mult(BinaryNode* b){
         dispatch(b->lhs);
         llvm::Value* lhs = result;
 
@@ -96,18 +91,18 @@ class LLVMGen: public Visitor
     }
 
     // pow is not a base expr of LLVM
-    void pow(NodeType)     {    result = LLVM_DOUBLE(0); }
-    void inv(NodeType expr){
-        UnaryNode* u = to_unary(expr);
+    void pow(BinaryNode*)     {    result = LLVM_DOUBLE(0); }
+    void inv(UnaryNode* expr){
         dispatch(u->expr);
         result = builder.CreateFDiv(LLVM_DOUBLE(1), result);
     }
 
-    void neg(NodeType expr){
-        UnaryNode* u = to_unary(expr);
+    void neg(UnaryNode* u){
         dispatch(u->expr);
         result = builder.CreateFMul(LLVM_DOUBLE(-1), result);
     }
+
+    void cond(Cond* c) override{ }
 
 private:
     llvm::LLVMContext& ctx;

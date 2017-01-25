@@ -22,6 +22,7 @@ enum class NodeID: std::size_t{
         #define DEFINE_LEAF_NODE(__type__, __str__, __repr__)  __str__,
         #define DEFINE_UNARY_NODE(__type__, __str__, __repr__)  __str__,
         #define DEFINE_BINARY_NODE(__type__, __str__, __repr__)  __str__,
+        #define DEFINE_NNARY_NODE(__type__, __str__, __repr__)  __str__,
         #include "Nodes.def"
         Size,
         Any
@@ -83,16 +84,24 @@ struct Visitor
             // I do think the compiler will make it O(1)
             #define SYMDIFF_NODES_DEFINITIONS
                 #define DEFINE_LEAF_NODE(__type__, __str__, __repr__)  \
-                        case NodeID::__str__: \
-                            __str__(n); return;\
+                        case NodeID::__str__:{\
+                            __type__* t = reinterpret_cast<__type__*>(n.get());\
+                            __str__(t); return;}
 
                 #define DEFINE_UNARY_NODE(__type__, __str__, __repr__) \
-                        case NodeID::__str__: \
-                            __str__(n); return;\
+                        case NodeID::__str__:{\
+                            __type__* t = reinterpret_cast<__type__*>(n.get());\
+                            __str__(t); return;}
 
                 #define DEFINE_BINARY_NODE(__type__, __str__, __repr__)\
-                        case NodeID::__str__: \
-                            __str__(n); return;\
+                        case NodeID::__str__:{\
+                            __type__* t = reinterpret_cast<__type__*>(n.get());\
+                            __str__(t); return;}
+
+                #define DEFINE_NNARY_NODE(__type__, __str__, __repr__)\
+                        case NodeID::__str__:{\
+                            __type__* t = reinterpret_cast<__type__*>(n.get());\
+                            __str__(t); return;}
 
                 #include "../src/Nodes.def"
             #undef SYMDIFF_NODES_DEFINITIONS
@@ -106,9 +115,17 @@ struct Visitor
     virtual void catch_all(NodeType) {}
 
     #define SYMDIFF_NODES_DEFINITIONS
-        #define DEFINE_LEAF_NODE(__type__, __str__, __repr__)   virtual void __str__ (NodeType n) = 0;
-        #define DEFINE_UNARY_NODE(__type__, __str__, __repr__)  virtual void __str__ (NodeType n) = 0;
-        #define DEFINE_BINARY_NODE(__type__, __str__, __repr__) virtual void __str__ (NodeType n) = 0;
+        #define DEFINE_LEAF_NODE(__type__, __str__, __repr__)\
+            virtual void __str__ (struct __type__* n) = 0;
+
+        #define DEFINE_UNARY_NODE(__type__, __str__, __repr__)\
+            virtual void __str__ (struct __type__* n) = 0;
+
+        #define DEFINE_BINARY_NODE(__type__, __str__, __repr__)\
+            virtual void __str__ (struct __type__* n) = 0;
+
+        #define DEFINE_NNARY_NODE(__type__, __str__, __repr__)\
+            virtual void __str__ (struct __type__* n) = 0;
 
         #include "../src/Nodes.def"
     #undef SYMDIFF_NODES_DEFINITIONS
@@ -117,12 +134,6 @@ struct Visitor
 /*
  *  Nodes def
  */
-struct Leaf: public internal::NodeImpl{
-    Leaf(NodeID _id):
-      internal::NodeImpl(_id)
-    {}
-};
-
 struct UnaryNode: public internal::NodeImpl{
     UnaryNode(NodeID _id, Node& _expr):
         internal::NodeImpl(_id), expr(_expr)
@@ -148,17 +159,13 @@ struct BinaryNode: public internal::NodeImpl{
     Node rhs;
 };
 
-/*
- * NaryNodes are made for associative operations (+ / *)
- * children are sorted so equality checking is easier
- */
+
 struct NaryNode: public internal::NodeImpl{
 public:
-    // Minimum 2?
     NaryNode(NodeID _id, Node& _lhs, Node& _rhs):
         internal::NodeImpl(_id), nodes({_lhs, _rhs})
     {
-        std::sort(nodes.begin(), nodes.end(), node_compare_le);
+
     }
 
     void add_child(Node& n)
@@ -170,8 +177,25 @@ public:
     Node operator[] (std::size_t idx) const {  return nodes[idx]; }
     std::size_t size() const {  return nodes.size(); }
 
-private:
-    std::vector<Node> nodes;
+protected:
+    std::vector<Node> nodes = std::vector<Node>(4);
+};
+
+// cond > 0 == true
+struct Cond: public NaryNode{
+
+    Cond(Node& cond, Node& texpr, Node& fexpr):
+        NaryNode(NodeID::cond, cond, texpr)
+    {
+        if (nodes.size() >= 3)
+            nodes[2] = fexpr;
+        else
+            nodes.push_back(fexpr);
+    }
+
+    Node& cond () {   return nodes[0]; }
+    Node& texpr() {   return nodes[1]; }
+    Node& fexpr() {   return nodes[2]; }
 };
 
 
@@ -286,7 +310,9 @@ inline Node make_placeholder(const std::string& name){
     #include "Nodes.def"
 #undef SYMDIFF_NODES_DEFINITIONS
 
-
+inline Node make_cond(Node cond, Node texpr, Node fexpr){
+    return std::make_shared<Cond>(cond, texpr, fexpr);
+}
 
 }
 

@@ -38,49 +38,34 @@ class DeepCopy: public Visitor
         result = pop(result);
     }
 
-    void add(NodeType n) override {
-        BinaryNode* b = to_binary(n);
-        return binary_operator(b->lhs, b->rhs, Builder::add);
-    }
+#define SYMDIFF_NODES_DEFINITIONS
+    #define DEFINE_UNARY_NODE(__type__, __str__, __repr__)\
+        void __str__ (UnaryNode* u) override{\
+            return unary_operator(u->expr, Builder::__str__);\
+        }
 
-//    void sub(NodeType lhs, NodeType rhs) override {
-//        BinaryNode* b = to_binary(n);
-//        return binary_operator(b->lhs, b->rhs, Builder::sub, , Operator::sub);
-//    }
+    #define DEFINE_BINARY_NODE(__type__, __str__, __repr__)\
+        void __str__ (BinaryNode* b) override{\
+            return binary_operator(b->lhs, b->rhs, Builder::__str__);\
+        }
 
-    void mult(NodeType n) override {
-        BinaryNode* b = to_binary(n);
-        return binary_operator(b->lhs, b->rhs, Builder::mult);
-    }
+    #include "../src/Nodes.def"
+#undef SYMDIFF_NODES_DEFINITIONS
 
-    void pow(NodeType n) override {
-        BinaryNode* b = to_binary(n);
-        return binary_operator(b->lhs, b->rhs, Builder::pow);
-    }
 
-//    void div(NodeType lhs, NodeType rhs) override {
-//        BinaryNode* b = to_binary(n);
-//        return binary_operator(b->lhs, b->rhs, Builder::div, , Operator::div);
-//    }
-
-    void neg(NodeType n) override {
-        UnaryNode* b = to_unary(n);
-        return unary_operator(b->expr, Builder::neg);
-    }
-
-    void inv(NodeType n) override {
-        UnaryNode* b = to_unary(n);
-        return unary_operator(b->expr, Builder::inv);
-    }
-
-    void value(NodeType expr) override {
-        Value* s = to_value(expr);
+    void value(Value* s) override {
         result = Builder::value(s->value);
     }
 
-    void placeholder(NodeType expr) override {
-        Placeholder* p = to_placeholder(expr);
+    void placeholder(Placeholder* p) override {
         result = Builder::placeholder(p->name);
+    }
+
+    void cond(Cond* c) override{
+        dispatch(c->cond());  Node a = result;
+        dispatch(c->texpr()); Node b = result;
+        dispatch(c->fexpr());
+        result = make_cond(a, b, result);
     }
 
     Node result;

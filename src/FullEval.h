@@ -44,9 +44,12 @@ namespace symdiff{
  */
 class FullEval: public Visitor
 {
-  public:
+public:
+    double result;
+    const NameContext& ctx;
+
     FullEval(const NameContext& ctx, Node expr):
-      ctx(ctx)
+        ctx(ctx)
     {
         dispatch(expr);
     }
@@ -68,50 +71,37 @@ class FullEval: public Visitor
         result = op(result);
     }
 
-    void add(NodeType n) override{
-        BinaryNode* b = to_binary(n);
-        return binary_operator(b->lhs, b->rhs, Operator::add);
+#define SYMDIFF_NODES_DEFINITIONS
+    #define DEFINE_UNARY_NODE(__type__, __str__, __repr__)\
+        void __str__ (UnaryNode* u) override{\
+            unary_operator(u->expr,Operator::__str__);\
+        }
+
+    #define DEFINE_BINARY_NODE(__type__, __str__, __repr__)\
+        void __str__ (BinaryNode* b) override{\
+            binary_operator(b->lhs, b->rhs, Operator::__str__);\
+        }
+
+    #include "../src/Nodes.def"
+#undef SYMDIFF_NODES_DEFINITIONS
+
+    void value(Value* v) override{
+        result = v->value;
     }
 
-    //void sub(NodeType n) override{
-    //  return binary_operator(n->lhs, n->rhs, [](double x, double y){ return x - y;});
-    //}
-
-    void mult(NodeType n) override{
-        BinaryNode* b = to_binary(n);
-        return binary_operator(b->lhs, b->rhs, Operator::mult);
-    }
-
-    void pow(NodeType n) override{
-        BinaryNode* b = to_binary(n);
-        return binary_operator(b->lhs, b->rhs, Operator::pow);
-    }
-
-    //void div(NodeType n) override{
-    //  return binary_operator(lhs, rhs, [](double x, double y){ return x / y;});
-    //}
-
-    void neg(NodeType expr) override{
-        return unary_operator(expr, Operator::neg);
-    }
-
-    void inv(NodeType expr) override{
-        return unary_operator(expr, Operator::inv);
-    }
-
-    void value(NodeType expr) override{
-        Value* s = to_value(expr);
-        result = s->value;
-    }
-
-    void placeholder(NodeType expr) override{
-        Placeholder* p = to_placeholder(expr);
+    void placeholder(Placeholder* p) override{
         auto v = ctx.at(p->name);
         result = to_value(v)->value;
     }
 
-    double result;
-    const NameContext& ctx;
+    void cond(Cond* c) override{
+        dispatch(c->cond());
+
+        if (result > 0)
+            dispatch(c->texpr());
+        else
+            dispatch(c->fexpr());
+    }
 };
 
 }

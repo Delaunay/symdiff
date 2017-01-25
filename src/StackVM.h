@@ -12,6 +12,8 @@
 #include <vector>
 #include <ostream>
 
+#include <iostream>
+
 namespace symdiff{
 
 // VM Opcodes
@@ -67,14 +69,17 @@ std::ostream& print(std::ostream& out, const SInstruction& i){
     switch(i.op){
     case SOpCode::lookup: return out << " " << i.name;
     case SOpCode::push: return out << " " << i.value;
+    case SOpCode::branch: return out << " " << i.value;
     }
     return out;
 }
 
 inline
 std::ostream& print(std::ostream& out, const SInstructions& s){
+    int k = 0;
     for(const auto& i: s){
-        print(out, i) << "\n";
+        out << k << " "; print(out, i) << "\n";
+        k += 1;
     }
     return out;
 }
@@ -97,18 +102,14 @@ class StackGenerator: public Visitor
 
 #define SYMDIFF_NODES_DEFINITIONS
     #define DEFINE_BINARY_NODE(__type__, __str__, __repr__) \
-    void __str__(NodeType expr) override{\
-        BinaryNode* b = to_binary(expr);\
-        \
+    void __str__(BinaryNode* b) override{\
         dispatch(b->lhs); \
         dispatch(b->rhs); \
         \
         result.push_back(SOpCode::__str__);\
     }
     #define DEFINE_UNARY_NODE(__type__, __str__, __repr__) \
-    void __str__(NodeType expr) override{\
-        UnaryNode* u = to_unary(expr);\
-        \
+    void __str__(UnaryNode* u) override{\
         dispatch(u->expr);\
         \
         result.push_back(SOpCode::__str__);\
@@ -117,13 +118,39 @@ class StackGenerator: public Visitor
     #include "Nodes.def"
 #undef SYMDIFF_NODES_DEFINITIONS
 
-    void value(NodeType expr) override {
-        result.push_back(to_value(expr)->value);
+    void value(Value* v) override {
+        result.push_back(v->value);
     }
 
-    void placeholder(NodeType expr) override {
-        Placeholder* p = to_placeholder(expr);
+    void placeholder(Placeholder* p) override {
         result.push_back(p->name);
+    }
+
+    void cond(Cond* c) override{
+        // Add cond instructions
+        dispatch(c->cond());
+
+        // insert branch instruction
+        result.push_back(SOpCode::branch);
+        std::size_t pos = result.size();
+
+        // Branch = if true branch
+        // so false instructions must be first
+        dispatch(c->fexpr());
+
+        // insert branch instruction that jumps everytime
+        result.push_back(1);
+        result.push_back(SOpCode::branch);
+        std::size_t pos2 = result.size();
+
+        dispatch(c->texpr());
+
+        // we cant use reference because the vector might have been realocated...
+        // size of fexpr() + branch
+        result[pos - 1].value = pos2 - pos;
+
+        // size of texpr()
+        result[pos2 - 1].value = result.size() - pos2;
     }
 
     SInstructions result;
@@ -156,6 +183,7 @@ public:
 
     double eval(const NameContext& ctx){
         // Virtual CPU - instruction dispatcher
+        // we increase by +1 because we dont have branching op yet
         for(std::size_t ic = 0; ic < instructions.size(); ++ic){
             SInstruction inst = instructions[ic];
 
@@ -195,6 +223,16 @@ public:
 
             case SOpCode::neg:{
                 temp.push_back(- pop(temp));
+                break;}
+
+            // branching skip n instructions
+            case SOpCode::branch:{
+                // get cond value
+                double cond = pop(temp);
+
+                // skip n instructions if true
+                if (cond > 0)
+                    ic += inst.value;
                 break;}
             }
         }

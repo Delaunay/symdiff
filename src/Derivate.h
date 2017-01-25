@@ -23,9 +23,7 @@ class Derivate: public Visitor
         return Derivate(ctx, expr).result;
     }
 
-    void add(NodeType v) override {
-        BinaryNode* b = to_binary(v);
-
+    void add(BinaryNode* b) override {
         NodeType rhs = b->rhs;
         NodeType lhs = b->lhs;
 
@@ -44,9 +42,7 @@ class Derivate: public Visitor
 //        result = Builder::sub(dlhs, result);
 //    }
 
-    void mult(NodeType v) override {
-        BinaryNode* b = to_binary(v);
-
+    void mult(BinaryNode* b) override {
         NodeType rhs = b->rhs;
         NodeType lhs = b->lhs;
 
@@ -60,31 +56,36 @@ class Derivate: public Visitor
     }
 
     // TODO
-    void pow(NodeType v) override {
+    void pow(BinaryNode* b) override {
         result = zero();
     }
 
-    void neg(NodeType expr) override {
-        dispatch(expr);
+    void neg(UnaryNode* u) override {
+        dispatch(u->expr);
         result = Builder::neg(result);
     }
 
     // TODO
-    void inv(NodeType) override {
+    void inv(UnaryNode*) override {
         result = zero();
     }
 
-    void value(NodeType) override {
+    void value(Value*) override {
         result = zero();
     }
 
-    void placeholder(NodeType expr) override {
-        Placeholder* p = to_placeholder(expr);
-
+    void placeholder(Placeholder* p) override {
         if (variable == p->name)
             result = one();
         else
             result = zero();
+    }
+
+    void cond(Cond* c) override{
+        // derivative not always defined
+        dispatch(c->texpr()); Node b = result;
+        dispatch(c->fexpr());
+        result = make_cond(c->cond(), b, result);
     }
 
     Node result;

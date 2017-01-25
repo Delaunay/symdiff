@@ -62,53 +62,46 @@ class PartialEval: public Visitor
             result = pop(result);
     }
 
-    void add(NodeType n) override {
-        BinaryNode* b = to_binary(n);
-        return binary_operator(b->lhs, b->rhs, Builder::add, Operator::add);
+#define SYMDIFF_NODES_DEFINITIONS
+    #define DEFINE_UNARY_NODE(__type__, __str__, __repr__)\
+        void __str__ (UnaryNode* u) override{\
+            unary_operator(u->expr, Builder::__str__, Operator::__str__);\
+        }
+
+    #define DEFINE_BINARY_NODE(__type__, __str__, __repr__)\
+        void __str__ (BinaryNode* b) override{\
+            binary_operator(b->lhs, b->rhs, Builder::__str__, Operator::__str__);\
+        }
+
+    #include "../src/Nodes.def"
+#undef SYMDIFF_NODES_DEFINITIONS
+
+    void value(Value* v) override {
+        result = make_value(v->value);
     }
 
-//    void sub(NodeType lhs, NodeType rhs){
-//        BinaryNode* b = to_binary(n);
-//        return binary_operator(b->lhs, b->rhs, Builder::sub, , Operator::sub);
-//    }
-
-    void mult(NodeType n) override {
-        BinaryNode* b = to_binary(n);
-        return binary_operator(b->lhs, b->rhs, Builder::mult, Operator::mult);
-    }
-
-    void pow(NodeType n) override {
-        BinaryNode* b = to_binary(n);
-        return binary_operator(b->lhs, b->rhs, Builder::pow, Operator::pow);
-    }
-
-//    void div(NodeType lhs, NodeType rhs){
-//        BinaryNode* b = to_binary(n);
-//        return binary_operator(b->lhs, b->rhs, Builder::div, , Operator::div);
-//    }
-
-    void neg(NodeType n) override {
-        UnaryNode* b = to_unary(n);
-        return unary_operator(b->expr, Builder::neg, Operator::neg);
-    }
-
-    void inv(NodeType n) override {
-        UnaryNode* b = to_unary(n);
-        return unary_operator(b->expr, Builder::inv, Operator::inv);
-    }
-
-    void value(NodeType expr) override {
-        result = expr;
-    }
-
-    void placeholder(NodeType expr) override {
-        Placeholder* p = to_placeholder(expr);
-
+    void placeholder(Placeholder* p) override {
         if (ctx.count(p->name) == 0)
-            result = expr;
+            result = make_placeholder(p->name);
 
         else // Node are immutable
           result = const_cast<NodeType>(ctx.at(p->name));
+    }
+
+    void cond(Cond* c) override{
+        dispatch(c->cond()); Node a = result;
+
+        // can we remove the if
+        if (is_value(a)){
+            Value* v = to_value(a);
+            if (v->value > 0){  dispatch(c->texpr());  }
+            else             {  dispatch(c->fexpr());  }
+        }
+        else{
+            dispatch(c->texpr()); Node b = result;
+            dispatch(c->fexpr());
+            result = make_cond(a, b, result);
+        }
     }
 
     Node result;

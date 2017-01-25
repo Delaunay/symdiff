@@ -138,6 +138,10 @@ struct PatternMatcher
                     return true;
                     // return match(na->lhs, nb->lhs) && match(na->rhs, nb->rhs);
                 }
+            case NodeID::cond:
+            {
+                return false;
+            }
             case NodeID::Any:
             case NodeID::Size:
                 assert("unreachable");

@@ -67,8 +67,8 @@ int main()
     auto bl  = make_balanced_expr(2, depth);
     auto ubl = make_unbalanced_expr(2, depth);
 
-    int tries = 1000;
-    int rep   = 1000;
+    int tries = 100;
+    int rep   = 100;
 
     bench::BenchTimer bpartial; BENCH(bpartial, tries, rep, bl.partial_eval(env));
     bench::BenchTimer bfull;    BENCH(bfull, tries, rep, bl.full_eval(env));

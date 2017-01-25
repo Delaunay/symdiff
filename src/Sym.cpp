@@ -18,6 +18,10 @@
 
 namespace symdiff{
 
+Sym  operator+ (double b, Sym a) {  return a + b;    }
+Sym  operator- (double b, Sym a) {  return Builder::minus(Builder::value(b), a._expr);    }
+Sym  operator/ (double b, Sym a) {  return Builder::div(Builder::value(b), a._expr);    }
+Sym  operator* (double b, Sym a) {  return a * b;    }
 
 Sym Sym::operator+ (Sym a) {    return Builder::add  (_expr, a._expr);    }
 Sym Sym::operator- (Sym a) {    return Builder::minus(_expr, a._expr);    }
@@ -45,6 +49,7 @@ double Sym::full_eval   (const NameContext& ctx)   {    return FullEval::run(ctx
 Sym    Sym::partial_eval(const NameContext& ctx)   {    return PartialEval::run(ctx, _expr);    }
 Sym    Sym::subst       (const NameContext& ctx)   {    return Substitution::run(ctx, _expr);   }
 Sym    Sym::derivate    (const std::string& name)  {    return Derivate::run(name, _expr);      }
+Sym    cond        (Sym cond, Sym tr, Sym fl) { return Builder::cond(cond, tr, fl); }
 
 #ifdef SYMDIFF_LLVM
 Sym Sym::llvm_gen(llvm::Function* f, llvm::LLVMContext& ctx){
