@@ -4,6 +4,9 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.1)
 # project name + language used
 PROJECT(symdiff CXX)
 
+# required for gtest which uses /MD
+ADD_COMPILE_OPTIONS(/MD)
+
 IF(${CMAKE_BUILD_TYPE} MATCHES "Debug")
     MESSAGE(STATUS "Building Debug Version")
 ELSE()

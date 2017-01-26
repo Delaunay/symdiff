@@ -24,7 +24,7 @@ public:
     Sym  operator- (double a);
     Sym  operator/ (double a);
     Sym  operator* (double a);
-    bool operator==(Sym a);
+    bool operator==(const Sym a) const;
     Sym  operator= (Sym a);
 
     bool match(Sym pattern);

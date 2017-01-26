@@ -42,66 +42,48 @@ namespace symdiff{
  *      _cache[node_ptr] = Optional(Value)
  *
  */
-class FullEval: public Visitor
+class FullEval: public StaticVisitor<FullEval, double>
 {
 public:
     double result;
     const NameContext& ctx;
 
-    FullEval(const NameContext& ctx, Node expr):
+    FullEval(const NameContext& ctx):
         ctx(ctx)
-    {
-        dispatch(expr);
-    }
+    {}
 
     static double run(const NameContext& ctx, Node expr){
-        return FullEval(ctx, expr).result;
-    }
-
-    void binary_operator(NodeType lhs, NodeType rhs, std::function<double(double, double)> op){
-        dispatch(lhs);
-        double lhs_val = result;
-
-        dispatch(rhs);
-        result = op(lhs_val, result);
-    }
-
-    void unary_operator(NodeType expr, std::function<double(double)> op){
-        dispatch(expr);
-        result = op(result);
+        return FullEval(ctx).dispatch(expr);
     }
 
 #define SYMDIFF_NODES_DEFINITIONS
     #define DEFINE_UNARY_NODE(__type__, __str__, __repr__)\
-        void __str__ (UnaryNode* u) override{\
-            unary_operator(u->expr,Operator::__str__);\
+        double __str__ (UnaryNode* u){\
+            return Operator::__str__(dispatch(u->expr));\
         }
 
     #define DEFINE_BINARY_NODE(__type__, __str__, __repr__)\
-        void __str__ (BinaryNode* b) override{\
-            binary_operator(b->lhs, b->rhs, Operator::__str__);\
+        double __str__ (BinaryNode* b){\
+            return Operator::__str__(dispatch(b->lhs), dispatch(b->rhs));\
         }
 
     #include "../src/Nodes.def"
 #undef SYMDIFF_NODES_DEFINITIONS
 
-    void value(Value* v) override{
-        result = v->value;
-    }
-
-    void placeholder(Placeholder* p) override{
+    double placeholder(Placeholder* p){
         auto v = ctx.at(p->name);
-        result = to_value(v)->value;
+        return to_value(v)->value;
     }
 
-    void cond(Cond* c) override{
-        dispatch(c->cond());
-
-        if (result > 0)
-            dispatch(c->texpr());
+    double cond(Cond* c) {
+        if (dispatch(c->cond()) > 0)
+            return dispatch(c->texpr());
         else
-            dispatch(c->fexpr());
+            return dispatch(c->fexpr());
     }
+
+    double value(Value* v)      {   return v->value; }
+    double catch_all(NodeType n){   return 0; }
 };
 
 }
