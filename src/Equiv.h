@@ -47,11 +47,11 @@ bool eq_sym(const Node& ca, const Node& cb){
 
             case NodeID::cond:
             {
-                Cond* ca = reinterpret_cast<Cond*>(ca);
-                Cond* cb = reinterpret_cast<Cond*>(cb);
-                return eq_sym(ca->cond() , cb->cond())  &&
-                       eq_sym(ca->texpr(), cb->texpr()) &&
-                       eq_sym(ca->fexpr(), cb->fexpr());
+                Cond* cca = reinterpret_cast<Cond*>(ca.get());
+                Cond* ccb = reinterpret_cast<Cond*>(cb.get());
+                return eq_sym(cca->cond() , ccb->cond())  &&
+                       eq_sym(cca->texpr(), ccb->texpr()) &&
+                       eq_sym(cca->fexpr(), ccb->fexpr());
             }
         case NodeID::Size:
             assert("unreachable");

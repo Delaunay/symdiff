@@ -111,10 +111,43 @@ Compiled with MSVC2015 (64bit) and LLVM-3.8.1 on Windows 10
 	
 
 * `StrContext` (C++, Python) and `PtrContext` (C++)
-	* StrContext is used to substitute using variable's name (Only placeholders can be subs)
-	* PtrContext can be used to substitute a given node by another (No Name clashes, Any node can be subs)
-* Pattern Matching (Partial Implementation) (C++)
-* Stack Based VM
+    * StrContext is used to substitute using variable's name (Only placeholders can be subs)
+* Pattern Matching (C++)
+* Stack Based VM (C++)
+
+         (if (+ -1 (- 3)) (+ x 2) (+ y 3))
+
+         0 push -1
+         1 push 3
+         2 neg
+         3 add
+         4 branch 5
+         5 lookup y
+         6 push 3
+         7 add
+         8 push 1
+         9 branch 3
+        10 lookup x
+        11 push 2
+        12 add
+
+* Register Based VM (C++)
+
+         (if (+ -1 (- 3)) (+ x 2) (+ y 3))
+
+         0 load -1 => 0
+         1 load 3 => 1
+         2 neg 1, 0, 1
+         3 add 0, 1, 0
+         4 branch 0 ? 5
+         5 lookup y => 0
+         6 load 3 => 1
+         7 add 0, 1, 0
+         8 load 1 => 1
+         9 branch 1 ? 3
+        10 lookup x => 0
+        11 load 2 => 1
+        12 add 0, 1, 0
 
 # TODO
 
@@ -133,16 +166,8 @@ Compiled with MSVC2015 (64bit) and LLVM-3.8.1 on Windows 10
         if (gstr == fstr)
             success ()
 
-Those are almost done I need just a little modification to current code
 
-* `find_node(mult(2, add(3, 4))`
-* `find_pattern(mult(any, add(any, any)))`    // Any is a special node that can not be evaluated
-* `find_all_node`
-* `find_all_pattern`
-* `replace(Pattern, Sym by)`
-* `replace(node, Sym by)`
-
-# IDEA
+# IDEAS
 
 * Type system
 * Function Call
@@ -176,6 +201,18 @@ Those are almost done I need just a little modification to current code
     * Placeholder could be generalized
     * ConstTensor
 
-* Add Flow control ?
-
 * Cached eval result
+
+* `find_node(mult(2, add(3, 4))`
+* `find_pattern(mult(any, add(any, any)))`    // Any is a special node that can not be evaluated
+* `find_all_node`
+* `find_all_pattern`
+* `replace(Pattern, Sym by)`
+* `replace(node, Sym by)`
+
+
+# Branching (VMs)
+
+Branching is only done 'forward' (skip instructions) you can rollback to previous
+instructions. So you cannot create loops using the provided branch operation.
+

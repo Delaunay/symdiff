@@ -4,11 +4,18 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.1)
 # project name + language used
 PROJECT(symdiff CXX)
 
+# required for gtest which uses /MD
+if (MSVC)
+    ADD_COMPILE_OPTIONS(/MD)
+ENDIF()
+
 IF(${CMAKE_BUILD_TYPE} MATCHES "Debug")
     MESSAGE(STATUS "Building Debug Version")
 ELSE()
     MESSAGE(STATUS "Building Release Version")
-    ADD_COMPILE_OPTIONS(/Ox)
+    if (MSVC)
+        ADD_COMPILE_OPTIONS(/Ox)
+    ENDIF()
 ENDIF()
 
 # specify where compiled files must go

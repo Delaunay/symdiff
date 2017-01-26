@@ -29,16 +29,10 @@ INCLUDE_DIRECTORIES(${gtest_dir}/include/)
 SET(TEST_SRC
     add_test.h
     equiv_test.h
-    exp_test.h
-    inverse_test.h
-    ln_test.h
-    mult_test.h
-    opposite_test.h
-    pow_test.h
 )
 
 ADD_EXECUTABLE(symdiff_test gtest_main.cpp ${TEST_SRC})
-TARGET_LINK_LIBRARIES(symdiff_test ${LLVM_LIBS} symdiff gtest -pthread)
+TARGET_LINK_LIBRARIES(symdiff_test ${LLVM_LIBS} symdiff gtest)
 SET_PROPERTY(TARGET symdiff_test PROPERTY CXX_STANDARD 14)
 
 

@@ -34,7 +34,7 @@ Sym Sym::operator/ (double a) {    return Builder::div  (_expr, Builder::value(a
 Sym Sym::operator* (double a) {    return Builder::mult (_expr, Builder::value(a));    }
 
 bool Sym::match(Sym pattern){   return PatternMatcher::run(_expr, pattern);   }
-bool Sym::operator==(Sym a) {   return equiv(_expr, a._expr);    }
+bool Sym::operator==(const Sym a) const {   return equiv(_expr, a._expr);    }
 Sym  Sym::operator= (Sym a) {
     _expr = a._expr;
     return *this;

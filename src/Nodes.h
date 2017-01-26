@@ -48,6 +48,8 @@ enum class TypeID: std::size_t{
  *  I think shared pointer allow us to reuse current node. Moreover, I need to
  *  look into smart evaluator that would compute nodes only once and cache the results.
  *
+ *  I might want to enable users to choose between unique and shared
+ *  since I would like to make graphs at some point
  */
 namespace internal{
 
@@ -67,75 +69,14 @@ typedef std::shared_ptr<internal::NodeImpl> Node;
 
 bool node_compare_le(const Node& a, const Node& b);
 
-/*
- * The Visitor is selfcontained. Both indirection used to implement it
- * are contained in the base class which means tree nodes do not have
- * vtables.
- */
-struct Visitor
-{
-    // I am not sure yet how the API should feel
-    typedef Node& NodeType;
 
-    virtual ~Visitor() {}
 
-    void dispatch(NodeType n)  {
-        switch(n->id){
-            // I do think the compiler will make it O(1)
-            #define SYMDIFF_NODES_DEFINITIONS
-                #define DEFINE_LEAF_NODE(__type__, __str__, __repr__)  \
-                        case NodeID::__str__:{\
-                            __type__* t = reinterpret_cast<__type__*>(n.get());\
-                            __str__(t); return;}
-
-                #define DEFINE_UNARY_NODE(__type__, __str__, __repr__) \
-                        case NodeID::__str__:{\
-                            __type__* t = reinterpret_cast<__type__*>(n.get());\
-                            __str__(t); return;}
-
-                #define DEFINE_BINARY_NODE(__type__, __str__, __repr__)\
-                        case NodeID::__str__:{\
-                            __type__* t = reinterpret_cast<__type__*>(n.get());\
-                            __str__(t); return;}
-
-                #define DEFINE_NNARY_NODE(__type__, __str__, __repr__)\
-                        case NodeID::__str__:{\
-                            __type__* t = reinterpret_cast<__type__*>(n.get());\
-                            __str__(t); return;}
-
-                #include "../src/Nodes.def"
-            #undef SYMDIFF_NODES_DEFINITIONS
-            case NodeID::Size:{
-                assert(true && "unreachable");
-            } 
-        }
-        catch_all(n);
-    }
-
-    virtual void catch_all(NodeType) {}
-
-    #define SYMDIFF_NODES_DEFINITIONS
-        #define DEFINE_LEAF_NODE(__type__, __str__, __repr__)\
-            virtual void __str__ (struct __type__* n) = 0;
-
-        #define DEFINE_UNARY_NODE(__type__, __str__, __repr__)\
-            virtual void __str__ (struct __type__* n) = 0;
-
-        #define DEFINE_BINARY_NODE(__type__, __str__, __repr__)\
-            virtual void __str__ (struct __type__* n) = 0;
-
-        #define DEFINE_NNARY_NODE(__type__, __str__, __repr__)\
-            virtual void __str__ (struct __type__* n) = 0;
-
-        #include "../src/Nodes.def"
-    #undef SYMDIFF_NODES_DEFINITIONS
-};
 
 /*
  *  Nodes def
  */
 struct UnaryNode: public internal::NodeImpl{
-    UnaryNode(NodeID _id, Node& _expr):
+    UnaryNode(NodeID _id, const Node& _expr):
         internal::NodeImpl(_id), expr(_expr)
     {}
 
@@ -144,7 +85,7 @@ struct UnaryNode: public internal::NodeImpl{
 };
 
 struct BinaryNode: public internal::NodeImpl{
-    BinaryNode(NodeID _id, Node& _lhs, Node& _rhs):
+    BinaryNode(NodeID _id, const Node& _lhs, const Node& _rhs):
         internal::NodeImpl(_id), lhs(_lhs), rhs(_rhs)
     {}
 
@@ -160,13 +101,15 @@ struct BinaryNode: public internal::NodeImpl{
 };
 
 
-struct NaryNode: public internal::NodeImpl{
+struct NnaryNode: public internal::NodeImpl{
 public:
-    NaryNode(NodeID _id, Node& _lhs, Node& _rhs):
+    NnaryNode(NodeID _id, const Node& _lhs, const Node& _rhs):
         internal::NodeImpl(_id), nodes({_lhs, _rhs})
-    {
+    {}
 
-    }
+    NnaryNode(NodeID _id, std::size_t n):
+        internal::NodeImpl(_id), nodes(std::vector<Node>(n))
+    {}
 
     void add_child(Node& n)
     {
@@ -182,15 +125,14 @@ protected:
 };
 
 // cond > 0 == true
-struct Cond: public NaryNode{
+struct Cond: public NnaryNode{
 
-    Cond(Node& cond, Node& texpr, Node& fexpr):
-        NaryNode(NodeID::cond, cond, texpr)
+    Cond(Node& c, Node& t, Node& f):
+        NnaryNode(NodeID::cond, 3)
     {
-        if (nodes.size() >= 3)
-            nodes[2] = fexpr;
-        else
-            nodes.push_back(fexpr);
+        cond()  = c;
+        texpr() = t;
+        fexpr() = f;
     }
 
     Node& cond () {   return nodes[0]; }
@@ -270,20 +212,21 @@ bool node_compare_le(const Node& a, const Node& b){
     return true;
 }
 
-inline double get_value(Node& ptr)  {   return reinterpret_cast<Value*>(ptr.get())->value; }
-inline bool is_leaf(Node& ptr)      {   return ptr->id <= NodeID::value;  }
-inline bool is_leaf(NodeRef ptr)    {   return ptr->id <= NodeID::value;  }
+inline double get_value(const Node& ptr)  {   return reinterpret_cast<Value*>(ptr.get())->value; }
+inline bool is_leaf(const Node& ptr)      {   return ptr->id <= NodeID::value;  }
+inline bool is_leaf(NodeRef ptr)          {   return ptr->id <= NodeID::value;  }
 
-inline bool is_unary(const Node& ptr)      {   return ptr->id >= NodeID::neg;  }
-inline bool is_unary(const NodeRef ptr)    {   return ptr->id >= NodeID::neg;  }
+inline bool is_unary(const Node& ptr)   {   return ptr->id >= NodeID::neg;  }
+inline bool is_unary(const NodeRef ptr) {   return ptr->id >= NodeID::neg;  }
 
-inline bool is_value(Node& ptr)    {   return ptr->id == NodeID::value;  }
-inline bool is_value(NodeRef ptr)  {   return ptr->id == NodeID::value;  }
+inline bool is_value(const Node& ptr)   {   return ptr->id == NodeID::value;  }
+inline bool is_value(NodeRef ptr)       {   return ptr->id == NodeID::value;  }
 
 // helpers
+inline NnaryNode*   to_nnary (const Node& ptr)     {    return reinterpret_cast<NnaryNode*>  (ptr.get());  }
 inline BinaryNode*  to_binary(const Node& ptr)     {    return reinterpret_cast<BinaryNode*> (ptr.get());  }
-inline UnaryNode*   to_unary(const Node& ptr)      {    return reinterpret_cast<UnaryNode*>  (ptr.get());  }
-inline Value*       to_value(const Node& ptr)      {    return reinterpret_cast<Value*>     (ptr.get());  }
+inline UnaryNode*   to_unary (const Node& ptr)     {    return reinterpret_cast<UnaryNode*>  (ptr.get());  }
+inline Value*       to_value (const Node& ptr)     {    return reinterpret_cast<Value*>      (ptr.get());  }
 inline Placeholder* to_placeholder(const Node& ptr){    return reinterpret_cast<Placeholder*>(ptr.get());  }
 
 inline Node make_value(double val){
@@ -298,12 +241,12 @@ inline Node make_placeholder(const std::string& name){
 #define SYMDIFF_NODES_DEFINITIONS
     //  create make_node_name() function with correct RTTI
     #define DEFINE_UNARY_NODE(__type__, __str__, __repr__) \
-        inline Node make_##__str__(Node val){\
+        inline Node make_##__str__(const Node& val){\
             return std::make_shared<UnaryNode>(NodeID::__str__, val);\
         }
 
     #define DEFINE_BINARY_NODE(__type__, __str__, __repr__) \
-        inline Node make_##__str__(Node lhs, Node rhs){\
+        inline Node make_##__str__(const Node& lhs, const Node& rhs){\
             return std::make_shared<BinaryNode>(NodeID::__str__, lhs, rhs);\
         }
 
@@ -313,6 +256,82 @@ inline Node make_placeholder(const std::string& name){
 inline Node make_cond(Node cond, Node texpr, Node fexpr){
     return std::make_shared<Cond>(cond, texpr, fexpr);
 }
+
+
+/*
+ * The visitor is selfcontained. Both indirection used to implement it
+ * are contained in the base class which means tree nodes do not have
+ * vtables.
+ */
+template<typename VT>
+struct StaticVisitor
+{
+    // I am not sure yet how the API should feel
+    typedef Node& NodeType;
+
+    template<typename RT, typename... Args>
+    RT dispatch(Node n, Args... args)  {
+        switch(n->id){
+            // I do think the compiler will make it O(1)
+            #define SYMDIFF_NODES_DEFINITIONS
+                #define DEFINE_LEAF_NODE(__type__, __str__, __repr__)  \
+                    case NodeID::__str__:{\
+                        struct __type__* t = reinterpret_cast<struct __type__*>(n.get());\
+                        return static_cast<VT*>(this)->__str__(t, args...);}
+
+                #define DEFINE_UNARY_NODE(__type__, __str__, __repr__) \
+                    case NodeID::__str__:{\
+                        __type__* t = reinterpret_cast<__type__*>(n.get());\
+                        return static_cast<VT*>(this)->__str__(t, args...);}
+
+                #define DEFINE_BINARY_NODE(__type__, __str__, __repr__)\
+                    case NodeID::__str__:{\
+                        __type__* t = reinterpret_cast<__type__*>(n.get());\
+                        return static_cast<VT*>(this)->__str__(t, args...);}
+
+                #define DEFINE_NNARY_NODE(__type__, __str__, __repr__)\
+                    case NodeID::__str__:{\
+                        __type__* t = reinterpret_cast<__type__*>(n.get());\
+                        return static_cast<VT*>(this)->__str__(t, args...);}
+
+                #include "../src/Nodes.def"
+            #undef SYMDIFF_NODES_DEFINITIONS
+            case NodeID::Size:{
+                assert(false && "unreachable");
+            }
+        }
+        return static_cast<VT*>(this)->catch_all(n, args...);
+    }
+};
+
+struct DynamicVisitor: public StaticVisitor<DynamicVisitor>
+{
+    virtual ~DynamicVisitor() {}
+
+    virtual void catch_all(NodeType) {}
+
+    void dispatch(Node n){
+        return StaticVisitor<DynamicVisitor>::dispatch<void>(n);
+    }
+
+#define SYMDIFF_NODES_DEFINITIONS
+    #define DEFINE_LEAF_NODE(__type__, __str__, __repr__)\
+        virtual void __str__ (struct __type__* n) = 0;
+
+    #define DEFINE_UNARY_NODE(__type__, __str__, __repr__)\
+        virtual void __str__ (struct __type__* n) = 0;
+
+    #define DEFINE_BINARY_NODE(__type__, __str__, __repr__)\
+        virtual void __str__ (struct __type__* n) = 0;
+
+    #define DEFINE_NNARY_NODE(__type__, __str__, __repr__)\
+        virtual void __str__ (struct __type__* n) = 0;
+
+    #include "../src/Nodes.def"
+#undef SYMDIFF_NODES_DEFINITIONS
+};
+
+typedef DynamicVisitor Visitor;
 
 }
 

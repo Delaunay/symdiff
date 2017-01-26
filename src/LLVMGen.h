@@ -102,7 +102,19 @@ class LLVMGen: public Visitor
         result = builder.CreateFMul(LLVM_DOUBLE(-1), result);
     }
 
-    void cond(Cond* c) override{ }
+    // not tested yet
+    void cond(Cond* c) override{
+        dispatch(c->cond());
+        llvm::Value* cmp = builder.CreateFCmpOGT(result, LLVM_DOUBLE(0), "cmp");
+
+        dispatch(c->fexpr());
+        llvm::Value* cond_false = result;
+
+        dispatch(c->texpr());
+        llvm::Value* cond_true = result;
+
+        result = builder.CreateCondBr(cmp, cond_true, cond_false);
+    }
 
 private:
     llvm::LLVMContext& ctx;
