@@ -23,6 +23,7 @@ Makefile*
 *.layout
 *.save
 *.user*
+*.orig
 /dependencies/
 /build/
 /build*/

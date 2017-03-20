@@ -3,7 +3,6 @@
 
 #include <memory>
 #include <string>
-#include <cassert>
 
 #include <vector>
 #include <algorithm>
@@ -15,14 +14,13 @@
  */
 
 namespace symdiff{
+void dynamic_assert(bool cond, const char* message);
+#define SYMDIFF_UNREACHABLE dynamic_assert(false, "unreachable")
 
 // RTTI
 enum class NodeID: std::size_t{
     #define SYMDIFF_NODES_DEFINITIONS
-        #define DEFINE_LEAF_NODE(__type__, __str__, __repr__)  __str__,
-        #define DEFINE_UNARY_NODE(__type__, __str__, __repr__)  __str__,
-        #define DEFINE_BINARY_NODE(__type__, __str__, __repr__)  __str__,
-        #define DEFINE_NNARY_NODE(__type__, __str__, __repr__)  __str__,
+        #define DEFINE_ALL_NODES(__type__, __str__, __repr__)  __str__,
         #include "Nodes.def"
         Size,
         Any
@@ -263,44 +261,29 @@ inline Node make_cond(Node cond, Node texpr, Node fexpr){
  * are contained in the base class which means tree nodes do not have
  * vtables.
  */
-template<typename VT>
+template<typename VisitorType>
 struct StaticVisitor
 {
     // I am not sure yet how the API should feel
     typedef Node& NodeType;
 
-    template<typename RT, typename... Args>
-    RT dispatch(Node n, Args... args)  {
+    template<typename ReturnType, typename... Args>
+    ReturnType dispatch(Node n, Args... args){
         switch(n->id){
-            // I do think the compiler will make it O(1)
             #define SYMDIFF_NODES_DEFINITIONS
-                #define DEFINE_LEAF_NODE(__type__, __str__, __repr__)  \
+                #define DEFINE_ALL_NODES(__type__, __str__, __repr__)  \
                     case NodeID::__str__:{\
                         struct __type__* t = reinterpret_cast<struct __type__*>(n.get());\
-                        return static_cast<VT*>(this)->__str__(t, args...);}
-
-                #define DEFINE_UNARY_NODE(__type__, __str__, __repr__) \
-                    case NodeID::__str__:{\
-                        __type__* t = reinterpret_cast<__type__*>(n.get());\
-                        return static_cast<VT*>(this)->__str__(t, args...);}
-
-                #define DEFINE_BINARY_NODE(__type__, __str__, __repr__)\
-                    case NodeID::__str__:{\
-                        __type__* t = reinterpret_cast<__type__*>(n.get());\
-                        return static_cast<VT*>(this)->__str__(t, args...);}
-
-                #define DEFINE_NNARY_NODE(__type__, __str__, __repr__)\
-                    case NodeID::__str__:{\
-                        __type__* t = reinterpret_cast<__type__*>(n.get());\
-                        return static_cast<VT*>(this)->__str__(t, args...);}
+                        return static_cast<VisitorType*>(this)->__str__(t, args...);}
 
                 #include "../src/Nodes.def"
             #undef SYMDIFF_NODES_DEFINITIONS
+            case NodeID::Any:
             case NodeID::Size:{
-                assert(false && "unreachable");
+                SYMDIFF_UNREACHABLE;
             }
         }
-        return static_cast<VT*>(this)->catch_all(n, args...);
+        return static_cast<VisitorType*>(this)->catch_all(n, args...);
     }
 };
 
@@ -315,18 +298,8 @@ struct DynamicVisitor: public StaticVisitor<DynamicVisitor>
     }
 
 #define SYMDIFF_NODES_DEFINITIONS
-    #define DEFINE_LEAF_NODE(__type__, __str__, __repr__)\
+    #define DEFINE_ALL_NODES(__type__, __str__, __repr__)\
         virtual void __str__ (struct __type__* n) = 0;
-
-    #define DEFINE_UNARY_NODE(__type__, __str__, __repr__)\
-        virtual void __str__ (struct __type__* n) = 0;
-
-    #define DEFINE_BINARY_NODE(__type__, __str__, __repr__)\
-        virtual void __str__ (struct __type__* n) = 0;
-
-    #define DEFINE_NNARY_NODE(__type__, __str__, __repr__)\
-        virtual void __str__ (struct __type__* n) = 0;
-
     #include "../src/Nodes.def"
 #undef SYMDIFF_NODES_DEFINITIONS
 };

@@ -27,11 +27,12 @@
 #   define WIN32_LEAN_AND_MEAN
 #   define EIGEN_BT_UNDEF_WIN32_LEAN_AND_MEAN
 # endif
-# include <windows.h>
+# include <Windows.h>
 #elif defined(__APPLE__)
 #include <mach/mach_time.h>
 #else
 # include <unistd.h>
+//# include <ctime>
 #endif
 
 #include <array>
@@ -65,10 +66,11 @@ static void clobber() {
 namespace bench
 {
 
-enum : std::size_t {
+enum : std::size_t{
   CPU_TIMER  = 0,
   REAL_TIMER = 1
 };
+
 
 /** Elapsed time timer keeping the best try.
   *
@@ -77,13 +79,22 @@ enum : std::size_t {
   *
   * Important: on linux, you must link with -lrt
   */
+#define DEFAULT_TIMER REAL_TIMER
 class BenchTimer
 {
 public:
   typedef std::array<double, 2> Vector2d;
   typedef std::size_t           Index;
 
-  BenchTimer()
+  enum TimeUnit: int{
+    Second      = 0,
+    Millisecond = 3,
+    Microsecond = 6,
+    Nanosecond  = 9
+  };
+
+  BenchTimer(TimeUnit tu = Second):
+      m_tunit(tu)
   {
 #if defined(_WIN32) || defined(__CYGWIN__)
     LARGE_INTEGER freq;
@@ -134,22 +145,22 @@ public:
       return b;
   }
 
-  inline double avg(Index TIMER = CPU_TIMER) const { return m_totals[TIMER] / m_n;   }
-  inline double sd(Index TIMER = CPU_TIMER) const  { return std::sqrt(var(TIMER));   }
+  inline double avg(Index TIMER = DEFAULT_TIMER) const { return m_totals[TIMER] / m_n;   }
+  inline double sd(Index TIMER = DEFAULT_TIMER) const  { return std::sqrt(var(TIMER));   }
 
   /// Return the best elapsed time in seconds
-  inline double best(Index TIMER = CPU_TIMER) const  { return m_bests[TIMER];  }
+  inline double best(Index TIMER = DEFAULT_TIMER) const  { return m_bests[TIMER];  }
 
   /// Return the worst elapsed time in seconds
-  inline double worst(Index TIMER = CPU_TIMER) const { return m_worsts[TIMER]; }
+  inline double worst(Index TIMER = DEFAULT_TIMER) const { return m_worsts[TIMER]; }
 
   /// Return the total elapsed time in seconds.
-  inline double total(Index TIMER = CPU_TIMER) const { return m_totals[TIMER]; }
+  inline double total(Index TIMER = DEFAULT_TIMER) const { return m_totals[TIMER]; }
 
   /// Return the elapsed time in seconds between the last start/stop pair
-  inline double value(Index TIMER = CPU_TIMER) const { return m_times[TIMER];  }
+  inline double value(Index TIMER = DEFAULT_TIMER) const { return m_times[TIMER];  }
 
-  inline double var(Index TIMER = CPU_TIMER) const
+  inline double var(Index TIMER = DEFAULT_TIMER) const
   {
       return m_var[TIMER] / m_n - avg(TIMER) * avg(TIMER);
   }
@@ -159,13 +170,15 @@ public:
 #ifdef _WIN32
     LARGE_INTEGER query_ticks;
     QueryPerformanceCounter(&query_ticks);
-    return query_ticks.QuadPart/m_frequency;
+    return query_ticks.QuadPart * multiplier(Second) / m_frequency;
 #elif __APPLE__
-    return double(mach_absolute_time())*1e-9;
+    return double(mach_absolute_time()) * multiplier(Nanosecond);
 #else
+    // return (double)clock() * multiplier(Second) / CLOCKS_PER_SEC;
     timespec ts;
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts);
-    return double(ts.tv_sec) + 1e-9 * double(ts.tv_nsec);
+    return double(ts.tv_sec)  * multiplier(Second) +
+           double(ts.tv_nsec) * multiplier(Nanosecond);
 #endif
   }
 
@@ -174,14 +187,30 @@ public:
 #ifdef _WIN32
     SYSTEMTIME st;
     GetSystemTime(&st);
-    return double(st.wSecond) + 1.e-3 * double(st.wMilliseconds);
+    return double(st.wSecond)       * multiplier(Second) +
+           double(st.wMilliseconds) * multiplier(Millisecond);
 #elif __APPLE__
-    return double(mach_absolute_time())*1e-9;
+    return double(mach_absolute_time()) * multiplier(Nanosecond);
 #else
     timespec ts;
     clock_gettime(CLOCK_REALTIME, &ts);
-    return double(ts.tv_sec) + 1e-9 * double(ts.tv_nsec);
+    return double(ts.tv_sec)  * multiplier(Second) +
+           double(ts.tv_nsec) * multiplier(Nanosecond);
 #endif
+  }
+
+  // return the multiplier to apply so the time measure is in the correct unit
+  double multiplier(TimeUnit t) const{
+      switch(m_tunit - t){
+      case -9: return 1e-9;
+      case -6: return 1e-6;
+      case -3: return 1e-3;
+      case  0: return 1;
+      case  3: return 1e3;
+      case  6: return 1e6;
+      case  9: return 1e9;
+      }
+      return std::pow(1, m_tunit - t);
   }
 
 protected:
@@ -196,6 +225,7 @@ protected:
   Vector2d m_totals;
   Vector2d m_var;
   int      m_n{0};
+  TimeUnit m_tunit;
 
 public:
   //EIGEN_MAKE_ALIGNED_OPERATOR_NEW

@@ -12,6 +12,7 @@ LINK_DIRECTORIES(../dependencies/thor/lib/)
 
 SET(SRC_LIST
     Nodes.h
+    Nodes.cpp
     PrettyPrint.h
     Derivate.h
     Builder.h
@@ -44,21 +45,32 @@ IF(${BUILD_UI})
     SET_PROPERTY(TARGET wdiff PROPERTY CXX_STANDARD 14)
 ENDIF()
 
+##   OpenGL
+## ======================
+
+FIND_PACKAGE(OpenGL REQUIRED)
+
+INCLUDE_DIRECTORIES(${OpenGL_includes})
+INCLUDE_DIRECTORIES(${OPENGL_INCLUDE_DIR})
+
+##   Glew files
+## ======================
+INCLUDE_DIRECTORIES(../dependencies/glfw/include)
+INCLUDE_DIRECTORIES(../dependencies/glew/include)
+
+INCLUDE_DIRECTORIES(../dependencies/nuklear)
+
+ADD_EXECUTABLE(nkdiff nkmain.cpp)
+TARGET_LINK_LIBRARIES(nkdiff libglew_shared glfw ${OPENGL_LIBRARIES})
+SET_PROPERTY(TARGET nkdiff PROPERTY CXX_STANDARD 14)
+
+
+
 ##   IMGUI files
 ## ======================
 #AUX_SOURCE_DIRECTORY(../dependencies/imgui IMGUI_SRC_LIST)
 #INCLUDE_DIRECTORIES(../dependencies/imgui)
 
-##   OpenGL
-## ======================
-
-#FIND_PACKAGE(OpenGL)
-#INCLUDE_DIRECTORIES(${OpenGL_includes})
-
-##   Glew files
-## ======================
-#INCLUDE_DIRECTORIES(../dependencies/glew/include)
-#LINK_DIRECTORIES(I:/source/glew/bin/Release/Win32)
 
 #ADD_EXECUTABLE(symdiffgui imgui_demo.cpp ${IMGUI_SRC_LIST})
 #TARGET_LINK_LIBRARIES(symdiffgui gl3w ${opengl_libraries})
