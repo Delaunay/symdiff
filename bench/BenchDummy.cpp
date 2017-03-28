@@ -67,8 +67,8 @@ int main()
     auto bl  = make_balanced_expr(2, depth);
     auto ubl = make_unbalanced_expr(2, depth);
 
-    int tries = 100;
-    int rep   = 100;
+    int tries = 1000;
+    int rep   = 1000;
 
     bench::BenchTimer bpartial; BENCH(bpartial, tries, rep, bl.partial_eval(env));
     bench::BenchTimer bfull;    BENCH(bfull, tries, rep, bl.full_eval(env));
@@ -133,14 +133,24 @@ int main()
     std::cout << std::string(80, '-') << std::endl;
     std::cout << "Unbalanced / Balanced" << std::endl;
     std::cout << std::string(80, '-') << std::endl;
-    std::cout << "Partial  : " << upartial / bpartial << std::endl;
-    std::cout << "Full     : " << ufull / bfull << std::endl;
-    std::cout << "(SVM) C+E: " << usvm  / bsvm  << std::endl;
-    std::cout << "(RVM) C+E: " << urvm  / brvm  << std::endl;
-    std::cout << "(SVM) C  : " << ucsvm / bcsvm << std::endl;
-    std::cout << "(RVM) C  : " << ucrvm / bcrvm << std::endl;
-    std::cout << "(SVM) E  : " << uesvm / besvm << std::endl;
-    std::cout << "(RVM) E  : " << uervm / bervm << std::endl;
+
+    auto partial = upartial / bpartial;
+    auto full  = ufull / bfull;
+    auto svm   = usvm  / bsvm;
+    auto rvm   = urvm  / brvm;
+    auto csvm  = ucsvm / bcsvm;
+    auto crvm  = ucrvm / bcrvm;
+    auto esvm  = uesvm / besvm;
+    auto ervm = uervm / bervm;
+
+    std::cout << "Partial  : " << partial << std::endl;
+    std::cout << "Full     : " << full  << std::endl;
+    std::cout << "(SVM) C+E: " << svm   << std::endl;
+    std::cout << "(RVM) C+E: " << rvm   << std::endl;
+    std::cout << "(SVM) C  : " << csvm  << std::endl;
+    std::cout << "(RVM) C  : " << crvm  << std::endl;
+    std::cout << "(SVM) E  : " << esvm  << std::endl;
+    std::cout << "(RVM) E  : " << ervm  << std::endl;
 
     return 0;
 }

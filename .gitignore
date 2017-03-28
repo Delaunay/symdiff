@@ -23,8 +23,12 @@ Makefile*
 *.layout
 *.save
 *.user*
+*.orig
 /dependencies/
-/build/
-/build*/
+build/
+.idea/*
+*/build*/
 /old/
 */.idea/*
+*/out/*
+symdiff.iml

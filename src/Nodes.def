@@ -31,6 +31,13 @@
  *
  */
 
+#ifdef DEFINE_ALL_NODES
+#   define DEFINE_LEAF_NODE(__type__, __str__, __repr__) DEFINE_ALL_NODES(__type__, __str__, __repr__)
+#   define DEFINE_UNARY_NODE(__type__, __str__, __repr__) DEFINE_ALL_NODES(__type__, __str__, __repr__)
+#   define DEFINE_BINARY_NODE(__type__, __str__, __repr__) DEFINE_ALL_NODES(__type__, __str__, __repr__)
+#   define DEFINE_NNARY_NODE(__type__, __str__, __repr__) DEFINE_ALL_NODES(__type__, __str__, __repr__)
+#endif
+
 // if not defined ignore them
 #ifndef DEFINE_NNARY_NODE
 #   define DEFINE_NNARY_NODE(__type__, __str__, __repr__)
@@ -108,3 +115,4 @@ DEFINE_RVM_NODE(Branch, branch, branch)
 #undef DEFINE_NNARY_NODE
 #undef DEFINE_SVM_NODE
 #undef DEFINE_RVM_NODE
+#undef DEFINE_ALL_NODES

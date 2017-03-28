@@ -7,15 +7,19 @@ PROJECT(symdiff CXX)
 # required for gtest which uses /MD
 if (MSVC)
     ADD_COMPILE_OPTIONS(/MD)
-ENDIF()
+ELSE(MSVC)
+    ADD_COMPILE_OPTIONS(-fno-rtti)
+ENDIF(MSVC)
 
 IF(${CMAKE_BUILD_TYPE} MATCHES "Debug")
     MESSAGE(STATUS "Building Debug Version")
 ELSE()
     MESSAGE(STATUS "Building Release Version")
     if (MSVC)
-        ADD_COMPILE_OPTIONS(/Ox)
-    ENDIF()
+        ADD_COMPILE_OPTIONS(/O2)
+    ELSE(MSVC)
+        ADD_COMPILE_OPTIONS(-O2)
+    ENDIF(MSVC)
 ENDIF()
 
 # specify where compiled files must go
