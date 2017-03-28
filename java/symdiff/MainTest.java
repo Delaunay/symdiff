@@ -1,8 +1,5 @@
 package symdiff;
 
-/**
- * Created by user on 3/28/2017.
- */
 public class MainTest {
     public static void main(String[] args){
         Symdiff x = new Symdiff(2.0);
@@ -11,5 +8,7 @@ public class MainTest {
         f.full_eval();
 
         f.pretty_print();
+        System.out.print('\n');
+        f.derivative().pretty_print();
     }
 }

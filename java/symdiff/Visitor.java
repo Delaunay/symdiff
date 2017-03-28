@@ -4,7 +4,7 @@ import symdiff.Symdiff.Expression;
 
 abstract class Visitor {
 	
-	void dispatch(Expression exp) { exp.visit(this);}
+	void dispatch(Expression exp){ exp.visit(this);}
 	
 	abstract void add (Expression lhs, Expression rhs);
 	abstract void mult(Expression lhs, Expression rhs);

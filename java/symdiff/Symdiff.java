@@ -70,8 +70,8 @@ public class Symdiff {
 		}
 	}
 	
-	static class Double extends Expression{
-		Double(double v){
+	static class Const extends Expression{
+		Const(double v){
 			_value = v;
 		}
 		
@@ -91,13 +91,14 @@ public class Symdiff {
 	}
 	
 	public Symdiff(double expr){
-		_expr = new Double(expr);
+		_expr = new Const(expr);
 	}
 	
-	public Symdiff add (Symdiff b) { return new Symdiff(new Add(_expr, b._expr)); }
-	public Symdiff mult(Symdiff b) { return new Symdiff(new Mult(_expr, b._expr)); }
-	public Symdiff inv()           { return new Symdiff(new Inv(_expr)); }
-	public Symdiff neg()           { return new Symdiff(new Neg(_expr)); }
+	public Symdiff add (Symdiff b) { return new Symdiff(Builder.add(_expr, b._expr)); }
+	public Symdiff mult(Symdiff b) { return new Symdiff(Builder.mult(_expr, b._expr)); }
+	public Symdiff inv()           { return new Symdiff(Builder.inv(_expr)); }
+	public Symdiff neg()           { return new Symdiff(Builder.neg(_expr)); }
+	public Symdiff derivative()    { return new Symdiff(Derivative.run(_expr)); }
 	
 	public double full_eval()    {	return FullEval.run(_expr); }
 	public void   pretty_print() {	PrettyPrint.run(_expr);     }
