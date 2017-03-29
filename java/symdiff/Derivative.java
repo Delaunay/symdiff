@@ -1,13 +1,16 @@
 package symdiff;
 import symdiff.Symdiff.*;
 
+import java.util.Map;
+
 class Derivative extends Visitor {
-    Derivative(Expression exp){
+    Derivative(Expression exp, String name_){
+        name = name_;
         dispatch(exp);
     }
 
-    static Expression run(Expression exp){
-        Derivative e = new Derivative(exp);
+    static Expression run(Expression exp, String name){
+        Derivative e = new Derivative(exp, name);
         return e.result;
     }
 
@@ -40,5 +43,13 @@ class Derivative extends Visitor {
         result = Builder.constant(0);
     }
 
+    void placeholder(String n){
+        if (name.equals(n))
+            result = Builder.constant(1);
+        else
+            result = Builder.constant(0);
+    }
+
     private Expression result;
+    private String name;
 }

@@ -1,8 +1,10 @@
 package symdiff;
 
+import java.util.Map;
+
 public class Symdiff {
 
-	static abstract class Expression {
+	public static abstract class Expression {
 		abstract void visit(Visitor v);
 	}
 	
@@ -30,7 +32,7 @@ public class Symdiff {
 		Expression lhs() { return _lhs; }
 	}
 	
-	static public class Add extends BinaryNode{
+	static class Add extends BinaryNode{
 		Add(Expression lhs, Expression rhs){
 			super(lhs, rhs);
 		}
@@ -82,26 +84,46 @@ public class Symdiff {
 		double value() {	return _value; }
 		private double _value;
 	}
-	
-	
+
+
+	static class Placeholder extends Expression{
+	    Placeholder(String name_){
+	        name = name_;
+        }
+
+	    void visit(Visitor v){
+	        v.placeholder(name);
+        }
+
+        private String name;
+    }
 	// ------------------------------------------------------------------------
 	
 	public Symdiff(Expression expr){
 		_expr = expr;
 	}
-	
-	public Symdiff(double expr){
-		_expr = new Const(expr);
-	}
-	
-	public Symdiff add (Symdiff b) { return new Symdiff(Builder.add(_expr, b._expr)); }
-	public Symdiff mult(Symdiff b) { return new Symdiff(Builder.mult(_expr, b._expr)); }
+
+    public Symdiff(double expr){
+        _expr = new Const(expr);
+    }
+
+    public Symdiff(String expr){
+        _expr = new Placeholder(expr);
+    }
+
+    public Symdiff add (Symdiff b) { return new Symdiff(Builder.add(_expr, b._expr)); }
+    public Symdiff mult(Symdiff b) { return new Symdiff(Builder.mult(_expr, b._expr)); }
+    public Symdiff add (double a)  { return new Symdiff(Builder.add(_expr,  Builder.constant(a))); }
+    public Symdiff mult(double a)  { return new Symdiff(Builder.mult(_expr, Builder.constant(a))); }
 	public Symdiff inv()           { return new Symdiff(Builder.inv(_expr)); }
 	public Symdiff neg()           { return new Symdiff(Builder.neg(_expr)); }
-	public Symdiff derivative()    { return new Symdiff(Derivative.run(_expr)); }
-	
-	public double full_eval()    {	return FullEval.run(_expr); }
-	public void   pretty_print() {	PrettyPrint.run(_expr);     }
-	
+    public Symdiff derivative(String name)    { return new Symdiff(Derivative.run(_expr, name)); }
+
+
+    public double  full_eval(Map<String, Expression> ctx)    {	return FullEval.run(_expr, ctx);                    }
+    public Symdiff partial_eval(Map<String, Expression> ctx) {	return new Symdiff(PartialEval.run(_expr, ctx));    }
+	public void    pretty_print()                            {	PrettyPrint.run(_expr);                             }
+	public Expression toExpr()                               {  return _expr; }
+
 	private Expression _expr;
 }

@@ -43,4 +43,8 @@ class PrettyPrint extends Visitor {
 	void value(double v){
 		System.out.print(v);
 	}
+
+	void placeholder(String name){
+		System.out.print(name);
+	}
 }

@@ -1,10 +1,10 @@
 package symdiff;
 import symdiff.Symdiff.*;
 
-class Builder {
+public class Builder {
     private static double epsilon = 1e-6;
 
-    static Expression add(Expression lhs, Expression rhs){
+    public static Expression add(Expression lhs, Expression rhs){
         if (lhs instanceof Const){
             Const v = (Const) lhs;
             if (Math.abs(v.value()) < epsilon)
@@ -26,7 +26,7 @@ class Builder {
         return new Add(lhs, rhs);
     }
 
-    static Expression mult(Expression lhs, Expression rhs){
+    public static Expression mult(Expression lhs, Expression rhs){
         if (lhs instanceof Const){
             Const v = (Const) lhs;
             if (Math.abs(v.value()) < epsilon)
@@ -52,7 +52,7 @@ class Builder {
         return new Mult(lhs, rhs);
     }
 
-    static Expression inv(Expression exp){
+    public static Expression inv(Expression exp){
         if (exp instanceof  Inv){
             Inv v = (Inv) exp;
             return v.exp();
@@ -67,7 +67,7 @@ class Builder {
         return new Inv(exp);
     }
 
-    static Expression neg(Expression exp){
+    public static Expression neg(Expression exp){
         if (exp instanceof  Neg){
             Neg v = (Neg) exp;
             return v.exp();
@@ -82,7 +82,11 @@ class Builder {
         return new Neg(exp);
     }
 
-    static Expression constant(double n){
+    public static Expression constant(double n){
         return new Const(n);
+    }
+
+    public static Expression placeholder(String name){
+        return new Placeholder(name);
     }
 }
